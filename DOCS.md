@@ -127,7 +127,7 @@ networks:
     port: 6697
     ssl: true
     channels:
-      - "#yourchannel"
+      - "#bots"
     sasl:
       username: "statsbot"
       password: "libera_pass"
@@ -137,8 +137,7 @@ networks:
     port: 6667
     ssl: false
     channels:
-      - "#yourchannel"
-      - "#otherchannel
+      - "#allnitecafe"
     nickserv_password: "undernet_pass"
     ghost: true
     on_connect:

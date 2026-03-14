@@ -185,8 +185,9 @@ class Sensors:
                     set_example(victim_id, "attacked_ex", full_text)
                     break  # only first victim
 
-        # Actions also count as lines/words
-        self.on_privmsg(nick, host, channel, full_text)
+        # Actions count as lines/words — parse only `text` (not "* nick text")
+        # so the nick doesn't get counted as a word
+        self.on_privmsg(nick, host, channel, text)
 
     # ─── JOIN ────────────────────────────────────────────────────────────────
 
