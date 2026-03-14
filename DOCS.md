@@ -126,7 +126,8 @@ networks:
     host: "irc.libera.chat"
     port: 6697
     ssl: true
-    channels: ["#bots"]
+    channels:
+      - "#yourchannel"
     sasl:
       username: "statsbot"
       password: "libera_pass"
@@ -135,7 +136,9 @@ networks:
     host: "irc.undernet.org"
     port: 6667
     ssl: false
-    channels: ["#allnitecafe"]
+    channels:
+      - "#yourchannel"
+      - "#otherchannel
     nickserv_password: "undernet_pass"
     ghost: true
     on_connect:
@@ -145,7 +148,9 @@ networks:
     host: "irc.ptirc.org"
     port: 6667
     ssl: false
-    channels: ["#lobby", "#help"]
+    channels:
+      - "#lobby"
+      - "#help"
 ```
 
 Each network gets its own session, ignore list, and stats namespace. The web
