@@ -81,13 +81,6 @@ class Sensors:
 
         nick_id = get_or_create_nick(nick, self.network, channel, host)
 
-        # Build current nick list for reference detection (cheap lookup)
-        from database.models import get_conn as _gc
-        with _gc() as _c:
-            _rows = _c.execute(
-                "SELECT n.nick FROM nicks n JOIN stats st ON st.nick_id=n.id WHERE n.network=? AND n.channel=? AND st.words>0 AND st.period=0",
-                (self.network, channel)
-            ).fetchall() if False else []  # disabled for perf — done in post-process
         parsed = parse_message(text, self.smileys, self.sad_smileys, self.min_word,
                                 self.violent_words, self.foul_words)
 
@@ -132,6 +125,19 @@ class Sensors:
         if self.log_wordstats:
             for word in parsed["word_list"]:
                 incr_word(nick_id, self.network, channel, word, nick=nick)
+
+        # Nick reference tracking
+        from database.models import get_conn as _gc, incr_nick_ref
+        from bot.parser import find_nick_refs
+        with _gc() as _c:
+            _known = [r["nick"] for r in _c.execute(
+                "SELECT n.nick FROM nicks n JOIN stats st ON st.nick_id=n.id"
+                " WHERE n.network=? AND n.channel=? AND st.words>0 AND st.period=0",
+                (self.network, channel)
+            ).fetchall()]
+        for mentioned in find_nick_refs(text, _known):
+            if mentioned.lower() != nick.lower():
+                incr_nick_ref(self.network, channel, mentioned, nick)
 
         # URL logging
         if self.log_urls and parsed["urls"]:
