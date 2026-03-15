@@ -225,6 +225,7 @@ NETWORK_TMPL = """<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{{ network }} — {{ title }}</title>
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -248,6 +249,12 @@ body { background: #0d0d1a; color: #c8d3f5; font-family: 'Segoe UI', Tahoma, mon
 .stat-row .sv { color: #e0af68; font-weight: bold; }
 .footer { text-align: center; color: #3d4a6b; font-size: .78rem;
           margin: 3rem 0 1.5rem; border-top: 1px solid #1a1a3e; padding-top: 1rem; }
+
+@media (max-width: 600px) {
+  .container { padding: 0 .7rem; }
+  .header { padding: 1rem; }
+  .chan-grid { grid-template-columns: 1fr; }
+}
 </style>
 </head>
 <body>
@@ -281,6 +288,7 @@ INDEX_TMPL = """<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{{ title }}</title>
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -325,6 +333,15 @@ body { background: #0d0d1a; color: #c8d3f5; font-family: 'Segoe UI', Tahoma, mon
 
 .footer { text-align: center; color: #3d4a6b; font-size: .78rem;
           margin: 3rem 0 1.5rem; border-top: 1px solid #1a1a3e; padding-top: 1rem; }
+
+@media (max-width: 600px) {
+  .container { padding: 0 .7rem; }
+  .header { padding: 1.2rem 1rem; }
+  .globals { gap: .5rem; }
+  .glob-card { min-width: 100px; padding: .6rem .8rem; }
+  .glob-card .gv { font-size: 1.3rem; }
+  .net-grid { grid-template-columns: 1fr; }
+}
 </style>
 </head>
 <body>
@@ -391,6 +408,7 @@ CHANNEL_TMPL = """<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{{ channel }} — {{ title }}</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
 <style>
@@ -420,6 +438,8 @@ body { background: #0d0d1a; color: #c8d3f5;
                   padding-bottom: .4rem; border-bottom: 1px solid #1e2a45; }
 
 /* Stats table */
+.tscroll { overflow-x: auto; -webkit-overflow-scrolling: touch; margin-bottom: 1rem; }
+.tscroll > table { margin-bottom: 0; min-width: 480px; }
 .stats-table { width: 100%; border-collapse: collapse; }
 .stats-table th { background: #1a1a3e; color: #7aa2f7; text-align: left;
                    padding: .5rem .7rem; font-size: .8rem; letter-spacing: .5px;
@@ -535,7 +555,7 @@ body { background: #0d0d1a; color: #c8d3f5;
   {% if rows %}
   <div class="section">
     <div class="section-title">Top {{ stat.replace('_',' ') }} ({{ period_name }})</div>
-    <table class="stats-table">
+    <div class="tscroll"><table class="stats-table">
       <thead><tr>
         <th class="rank">#</th>
         <th>Nick</th>

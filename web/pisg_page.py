@@ -134,6 +134,7 @@ def build_page(network: str, channel: str, period: int, config: dict) -> str:
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{channel} @ {network} — {title}</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
 <style>
@@ -170,6 +171,10 @@ h2.section-title {{ font-size: .8rem; color: var(--blue); text-transform: upperc
                     border-bottom: 1px solid var(--border); margin: 2rem 0 .8rem; }}
 
 /* Main nick table */
+/* Responsive table wrapper — horizontal scroll on mobile, invisible on desktop */
+.tscroll {{ overflow-x: auto; -webkit-overflow-scrolling: touch; margin-bottom: 1rem; }}
+.tscroll > table {{ margin-bottom: 0; min-width: 480px; }}
+
 .nick-table {{ width: 100%; border-collapse: collapse; margin-bottom: 1rem; }}
 .nick-table th {{ background: var(--bg3); color: var(--blue); text-align: left;
                   padding: .5rem .7rem; font-size: .78rem; text-transform: uppercase;
@@ -258,6 +263,20 @@ b {{ color: var(--cyan); }}
 .footer {{ text-align: center; color: var(--muted); font-size: .78rem;
            margin: 2rem 0 1rem; border-top: 1px solid var(--bg3); padding-top: 1rem; }}
 
+/* ── Mobile ────────────────────────────────────────────────────────── */
+@media (max-width: 600px) {{
+  .container {{ padding: 0 .6rem; }}
+  .page-header {{ padding: 1rem; }}
+  .page-header h1 {{ font-size: 1.3rem; }}
+  .summary-strip {{ gap: .4rem; }}
+  .s-card {{ min-width: 80px; padding: .4rem .6rem; }}
+  .s-card .sv {{ font-size: 1rem; }}
+  .tabs {{ gap: .3rem; }}
+  .tab {{ padding: .3rem .7rem; font-size: .78rem; }}
+  .tscroll > table {{ font-size: .8rem; }}
+  .quote-cell {{ display: none; }}
+}}
+
 /* Live user count badge */
 #live-count {{ display: inline-block; background: var(--bg3); border-radius: 4px;
                padding: .1rem .5rem; font-size: .78rem; color: var(--cyan); margin-left: .5rem; }}
@@ -317,7 +336,7 @@ b {{ color: var(--cyan); }}
     show_lines    = pisg.get("ShowLines", True)
     show_quote    = pisg.get("ShowRandQuote", True)
 
-    h('<table class="nick-table"><thead><tr>')
+    h('<div class="tscroll"><table class="nick-table"><thead><tr>')
     h('<th class="rank">#</th><th>Nick</th>')
     if show_lines: h('<th>Lines</th>')
     if show_words: h('<th>Words</th>')
@@ -373,7 +392,7 @@ b {{ color: var(--cyan); }}
         if show_quote: h(f'<td class="quote-cell" title="{q}">{q}</td>')
         h('</tr>')
 
-    h('</tbody></table>')
+    h('</tbody></table></div>')
 
     # "These didn't make the top"
     if rest_rows:
@@ -609,7 +628,7 @@ b {{ color: var(--cyan); }}
             max_rows = max(len(b) for b in band_ranked)
             if max_rows > 0:
                 section("Most active nicks by hour")
-                h('<table class="byhour-table"><thead><tr>')
+                h('<div class="tscroll"><table class="byhour-table"><thead><tr>')
                 h('<th class="rank">#</th>')
                 for _, _, label in bands:
                     h(f'<th>{label}</th>')
@@ -624,12 +643,12 @@ b {{ color: var(--cyan); }}
                         else:
                             h('<td></td>')
                     h('</tr>')
-                h('</tbody></table>')
+                h('</tbody></table></div>')
 
     # ── Most used words ────────────────────────────────────────────────────────
     if top_words_ch:
         section("Most used words")
-        h('<table class="info-table"><thead><tr>')
+        h('<div class="tscroll"><table class="info-table"><thead><tr>')
         h('<th class="rank">#</th><th>Word</th><th>Uses</th><th>Last used by</th>')
         h('</tr></thead><tbody>')
         for i_w, w in enumerate(top_words_ch):
@@ -638,19 +657,19 @@ b {{ color: var(--cyan); }}
               f'<td style="font-family:monospace">{w["word"]}</td>'
               f'<td class="val">{w["count"]}</td>'
               f'<td class="small">{last}</td></tr>')
-        h('</tbody></table>')
+        h('</tbody></table></div>')
 
         section("Most referenced nicks")
-        h('<table class="info-table"><thead><tr><th class="rank">#</th><th>Nick</th><th>Times mentioned</th><th>Last by</th></tr></thead><tbody>')
+        h('<div class="tscroll"><table class="info-table"><thead><tr><th class="rank">#</th><th>Nick</th><th>Times mentioned</th><th>Last by</th></tr></thead><tbody>')
         for i, r in enumerate(nick_refs):
             h(f'<tr><td class="rank">{i+1}</td><td class="nick-name">{r["mentioned"]}</td>'
               f'<td class="val">{r["count"]}</td><td class="small">{r.get("by_nick","")}</td></tr>')
-        h('</tbody></table>')
+        h('</tbody></table></div>')
 
     # ── Karma leaderboard ────────────────────────────────────────────────────
     if pisg.get("ShowKarma", True) and (karma_top or karma_bottom):
         section("Karma")
-        h('<table class="info-table"><thead><tr>')
+        h('<div class="tscroll"><table class="info-table"><thead><tr>')
         h('<th class="rank">#</th><th>Nick</th><th>Score</th></tr></thead><tbody>')
         # Top positive karma
         for i, r in enumerate(karma_top):
@@ -668,16 +687,16 @@ b {{ color: var(--cyan); }}
             h(f'<tr><td class="rank">—</td>'
               f'<td class="nick-name">{r["nick"]}</td>'
               f'<td class="val" style="color:var(--red)">{score}</td></tr>')
-        h('</tbody></table>')
+        h('</tbody></table></div>')
 
     # ── Smiley frequency table ────────────────────────────────────────────────
     if pisg.get("ShowSmileys", True) and top_smileys:
         section("Smileys :-)")
-        h('<table class="info-table"><thead><tr><th class="rank">#</th><th>Smiley</th><th>Uses</th><th>Top user</th></tr></thead><tbody>')
+        h('<div class="tscroll"><table class="info-table"><thead><tr><th class="rank">#</th><th>Smiley</th><th>Uses</th><th>Top user</th></tr></thead><tbody>')
         for i, r in enumerate(top_smileys):
             h(f'<tr><td class="rank">{i+1}</td><td style="font-size:1.1rem">{r["smiley"]}</td>'
               f'<td class="val">{r["total"]}</td><td class="small">{r.get("top_user","")}</td></tr>')
-        h('</tbody></table>')
+        h('</tbody></table></div>')
 
     # ── Latest topics ─────────────────────────────────────────────────────────
     if recent_topics:
@@ -693,24 +712,24 @@ b {{ color: var(--cyan); }}
     # ── Recent URLs ───────────────────────────────────────────────────────────
     if pisg.get("ShowMru", True) and recent_urls:
         section("Most referenced URLs")
-        h('<table class="info-table"><thead><tr><th>URL</th><th>Uses</th><th>Last by</th><th>When</th></tr></thead><tbody>')
+        h('<div class="tscroll"><table class="info-table"><thead><tr><th>URL</th><th>Uses</th><th>Last by</th><th>When</th></tr></thead><tbody>')
         for u in recent_urls:
             url = u["url"]
             disp = url[:70] + "…" if len(url) > 70 else url
             h(f'<tr><td><a href="{url}" target="_blank" rel="noopener" style="color:var(--blue)">{disp}</a></td>'
               f'<td class="val">{u.get("count", 1)}</td>'
               f'<td class="small">{u.get("nick","")}</td><td class="small">{_ago(u["ts"])}</td></tr>')
-        h('</tbody></table>')
+        h('</tbody></table></div>')
 
     # ── Recent kicks ──────────────────────────────────────────────────────────
     if recent_kicks:
-        h('<table class="info-table"><thead><tr><th>Victim</th><th>Kicked by</th><th>Reason</th><th>When</th></tr></thead><tbody>')
+        h('<div class="tscroll"><table class="info-table"><thead><tr><th>Victim</th><th>Kicked by</th><th>Reason</th><th>When</th></tr></thead><tbody>')
         for k in recent_kicks:
             h(f'<tr><td style="color:var(--red)">{k["victim"]}</td>'
               f'<td style="color:var(--green)">{k["kicker"]}</td>'
               f'<td class="small">{(k["reason"] or "")[:50]}</td>'
               f'<td class="small">{_ago(k["ts"])}</td></tr>')
-        h('</tbody></table>')
+        h('</tbody></table></div>')
 
     # ── Ops / Voice / Halfops ─────────────────────────────────────────────────
     show_ops     = pisg.get("ShowOps",     True)
