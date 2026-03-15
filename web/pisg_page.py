@@ -749,7 +749,7 @@ b {{ color: var(--cyan); }}
     if pisg.get("ShowMuw", True) and top_words_ch:
         section(t("section_most_used_words", lang))
         h('<div class="tscroll"><table class="info-table"><thead><tr>')
-        h('<th class="rank">#</th><th>Word</th><th>Number of Uses</th><th>Last Used by</th>')
+        h(f'<th class="rank">#</th><th>{t("col_word",lang)}</th><th>{t("col_number_of_uses",lang)}</th><th>{t("col_last_used_by",lang)}</th>')
         h('</tr></thead><tbody>')
         for i_w, w in enumerate(top_words_ch):
             last = w.get("last_used_by") or ""
@@ -763,7 +763,7 @@ b {{ color: var(--cyan); }}
     if pisg.get("ShowMrn", True) and nick_refs:
         section(t("section_most_ref_nicks", lang))
         h('<div class="tscroll"><table class="info-table"><thead><tr>'
-          '<th class="rank">#</th><th>Nick</th><th>Number of Uses</th><th>Last by</th>'
+          f'<th class="rank">#</th><th>{t("col_nick",lang)}</th><th>{t("col_number_of_uses",lang)}</th><th>{t("col_last_by",lang)}</th>'
           '</tr></thead><tbody>')
         for i, r in enumerate(nick_refs):
             h(f'<tr><td class="rank">{i+1}</td><td class="nick-name">{r["mentioned"]}</td>'
@@ -774,7 +774,7 @@ b {{ color: var(--cyan); }}
     if pisg.get("ShowSmileys", True) and top_smileys:
         section(t("section_smileys", lang))
         h('<div class="tscroll"><table class="info-table"><thead><tr>'
-          '<th class="rank">#</th><th>Smiley</th><th>Uses</th><th>Top user</th>'
+          f'<th class="rank">#</th><th>{t("col_smiley",lang)}</th><th>{t("col_uses",lang)}</th><th>{t("col_top_user",lang)}</th>'
           '</tr></thead><tbody>')
         for i, r in enumerate(top_smileys):
             h(f'<tr><td class="rank">{i+1}</td><td style="font-size:1.1rem">{r["smiley"]}</td>'
@@ -785,7 +785,7 @@ b {{ color: var(--cyan); }}
     if pisg.get("ShowKarma", True) and (karma_top or karma_bottom):
         section(t("section_karma", lang))
         h('<div class="tscroll"><table class="info-table"><thead><tr>'
-          '<th class="rank">#</th><th>Nick</th><th>Score</th>'
+          f'<th class="rank">#</th><th>{t("col_nick",lang)}</th><th>{t("col_score",lang)}</th>'
           '</tr></thead><tbody>')
         for i, r in enumerate(karma_top):
             score = r["score"]
@@ -807,7 +807,7 @@ b {{ color: var(--cyan); }}
     if pisg.get("ShowMru", True) and recent_urls:
         section(t("section_most_ref_urls", lang))
         h('<div class="tscroll"><table class="info-table"><thead><tr>'
-          '<th>URL</th><th>Number of Uses</th><th>Last by</th><th>When</th>'
+          f'<th>{t("col_url",lang)}</th><th>{t("col_number_of_uses",lang)}</th><th>{t("col_last_by",lang)}</th><th>When</th>'
           '</tr></thead><tbody>')
         for u in recent_urls:
             url = u["url"]
