@@ -235,6 +235,24 @@ every 30 seconds via JavaScript.
 
 ## IRC commands
 
+The default command prefix is `!`, set globally under `commands.prefix` in
+`config.yml`. If a network already uses `!` for something else (e.g. Anope
+BotServ fantasy commands), you can override it per network with `cmd_prefix`:
+
+```yaml
+commands:
+  prefix: "!"               # global default
+
+networks:
+  - name: "libera"
+    host: "irc.libera.chat"
+    # inherits prefix "!"
+
+  - name: "undernet"
+    host: "irc.undernet.org"
+    cmd_prefix: "."         # use . on this network instead
+```
+
 ### Channel commands (public)
 
 | Command | Description |

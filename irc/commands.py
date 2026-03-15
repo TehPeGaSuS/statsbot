@@ -19,9 +19,13 @@ class CommandHandler:
         self.network = network
         self.send = send_fn
         self.auth = auth_manager
-        self.prefix = config.get("commands", {}).get("prefix", "!")
-        self.max_cmds = config.get("commands", {}).get("max_cmds", 5)
-        self.max_window = config.get("commands", {}).get("max_cmds_window", 60)
+        # Per-network prefix overrides the global commands.prefix.
+        # Find this network's entry in config to check for a local override.
+        _global_cmd = config.get("commands", {})
+        _net_cfg = next((n for n in config.get("networks", []) if n.get("name") == network), {})
+        self.prefix   = _net_cfg.get("cmd_prefix") or _global_cmd.get("prefix", "!")
+        self.max_cmds  = _global_cmd.get("max_cmds", 5)
+        self.max_window = _global_cmd.get("max_cmds_window", 60)
         self._flood_buckets: dict = {}
 
     def _flood_check(self, channel: str) -> bool:

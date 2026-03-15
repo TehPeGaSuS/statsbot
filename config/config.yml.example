@@ -12,6 +12,8 @@ networks:
     ssl: true
     channels:
       - "#yourchannel"
+    # cmd_prefix: "."  # override global prefix for this network only
+                       # useful if Anope BotServ already uses "!"
 
     # Authentication — uncomment and fill in what you need:
 
