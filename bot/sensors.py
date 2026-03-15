@@ -328,16 +328,60 @@ class Sensors:
     # ─── MODE ─────────────────────────────────────────────────────────────────
 
     def on_mode(self, nick: str, host: str, channel: str,
-                 mode_str: str, target: str = ""):
+                 mode_str: str, mode_targets: list = None):
         if not channel.startswith(('#', '&', '!')):
             return
-        nick_id = get_or_create_nick(nick, self.network, channel, host)
-        incr(nick_id, "modes", 1)
-        # Track +b (bans) separately
-        if "+b" in mode_str:
-            incr(nick_id, "bans", 1)
+        if mode_targets is None:
+            mode_targets = []
+
+        setter_id = get_or_create_nick(nick, self.network, channel, host)
+        incr(setter_id, "modes", 1)
+
+        # Parse mode string into (flag, adding) pairs matched with targets.
+        # e.g. "+oov" with ["Nick1", "Nick2", "Nick3"] → [(o,+,Nick1), (o,+,Nick2), (v,+,Nick3)]
+        # Mode chars that consume a target parameter:
+        _TARGETED = set("oOvVhHbBeEIkqlLjf")
+        adding = True
+        target_idx = 0
+        for ch in mode_str:
+            if ch == '+':
+                adding = True
+            elif ch == '-':
+                adding = False
+            elif ch in _TARGETED:
+                target_nick = mode_targets[target_idx] if target_idx < len(mode_targets) else None
+                target_idx += 1
+
+                if ch == 'b':
+                    incr(setter_id, "bans", 1)
+                elif ch in ('o', 'O') and target_nick:
+                    target_id = get_or_create_nick(target_nick, self.network, channel)
+                    if adding:
+                        incr(setter_id,  "op_given", 1)
+                        incr(target_id,  "op_got",   1)
+                    else:
+                        incr(setter_id,  "op_taken", 1)
+                        incr(target_id,  "deop_got", 1)
+                elif ch in ('h', 'H') and target_nick:
+                    target_id = get_or_create_nick(target_nick, self.network, channel)
+                    if adding:
+                        incr(setter_id,  "halfop_given", 1)
+                        incr(target_id,  "halfop_got",   1)
+                    else:
+                        incr(setter_id,  "halfop_taken", 1)
+                        incr(target_id,  "dehalfop_got", 1)
+                elif ch == 'v' and target_nick:
+                    target_id = get_or_create_nick(target_nick, self.network, channel)
+                    if adding:
+                        incr(setter_id,  "voice_given", 1)
+                        incr(target_id,  "voice_got",   1)
+                    else:
+                        incr(setter_id,  "voice_taken", 1)
+                        incr(target_id,  "devoice_got", 1)
+
+        targets_str = " ".join(mode_targets)
         add_chanlog(self.network, channel, nick,
-                     f"sets mode {mode_str} {target}", type_=2)
+                    f"sets mode {mode_str} {targets_str}".rstrip(), type_=2)
 
     # ─── TOPIC ────────────────────────────────────────────────────────────────
 

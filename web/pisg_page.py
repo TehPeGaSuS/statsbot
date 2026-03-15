@@ -113,7 +113,10 @@ def build_page(network: str, channel: str, period: int, config: dict) -> str:
     period_names = ["all-time", "today", "this week", "this month"]
     title        = web.get("title", "IRC Stats")
     project_url  = web.get("project_url", "https://github.com/TehPeGaSuS/Statsbot")
-    maintainer   = pisg.get("Maintainer", "")
+    # Use the bot's nick for this network as the maintainer string.
+    # Checks for a per-network nick override, falls back to bot.nick.
+    _net_entry  = next((n for n in config.get("networks", []) if n.get("name") == network), {})
+    maintainer  = _net_entry.get("nick") or config.get("bot", {}).get("nick", "")
     now_str      = datetime.now().strftime("%Y-%m-%d %H:%M")
 
     # ── HTML construction ─────────────────────────────────────────────────────
@@ -708,6 +711,132 @@ b {{ color: var(--cyan); }}
               f'<td class="small">{(k["reason"] or "")[:50]}</td>'
               f'<td class="small">{_ago(k["ts"])}</td></tr>')
         h('</tbody></table>')
+
+    # ── Ops / Voice / Halfops ─────────────────────────────────────────────────
+    show_ops     = pisg.get("ShowOps",     True)
+    show_voice   = pisg.get("ShowVoice",   True)
+    show_halfops = pisg.get("ShowHalfops", True)
+
+    def _get_opvoice_top(stat, limit=3):
+        return get_top(network, channel, stat, 0, limit)
+
+    if show_ops or show_voice or show_halfops:
+        _has_ops     = show_ops     and any(r["value"] > 0 for r in _get_opvoice_top("op_given"))
+        _has_voice   = show_voice   and any(r["value"] > 0 for r in _get_opvoice_top("voice_given"))
+        _has_halfops = show_halfops and any(r["value"] > 0 for r in _get_opvoice_top("halfop_given"))
+
+        if _has_ops or _has_voice or _has_halfops:
+            section("Ops, voice and halfops")
+            h('<table class="bignums">')
+            # ── Ops ───────────────────────────────────────────────────────
+            if _has_ops:
+                og = [r for r in _get_opvoice_top("op_given",  3) if r["value"] > 0]
+                ot = [r for r in _get_opvoice_top("op_taken",  3) if r["value"] > 0]
+                gr = [r for r in _get_opvoice_top("op_got",    3) if r["value"] > 0]
+                dr = [r for r in _get_opvoice_top("deop_got",  3) if r["value"] > 0]
+
+                if og:
+                    text = (f"<b>{og[0]['nick']}</b> is either insane or just a fair op, "
+                            f"giving ops to <b>{og[0]['value']}</b> people!")
+                    sub  = (f"<b>{og[1]['nick']}</b> is also quite op-happy, "
+                            f"handing out ops <b>{og[1]['value']}</b> times."
+                            if len(og) > 1 else None)
+                    hicell(text, sub)
+
+                if ot:
+                    text = (f"<b>{ot[0]['nick']}</b> is the channel's deop machine, "
+                            f"removing ops from <b>{ot[0]['value']}</b> people.")
+                    sub  = (f"<b>{ot[1]['nick']}</b> also took ops away "
+                            f"<b>{ot[1]['value']}</b> times."
+                            if len(ot) > 1 else None)
+                    hicell(text, sub)
+
+                if gr:
+                    text = (f"<b>{gr[0]['nick']}</b> is a popular one — "
+                            f"they were given ops <b>{gr[0]['value']}</b> times.")
+                    sub  = (f"<b>{gr[1]['nick']}</b> was also trusted with ops "
+                            f"<b>{gr[1]['value']}</b> times."
+                            if len(gr) > 1 else None)
+                    hicell(text, sub)
+
+                if dr:
+                    text = (f"Poor <b>{dr[0]['nick']}</b> — they got deopped "
+                            f"<b>{dr[0]['value']}</b> times!")
+                    sub  = (f"<b>{dr[1]['nick']}</b> also suffered "
+                            f"<b>{dr[1]['value']}</b> deops."
+                            if len(dr) > 1 else None)
+                    hicell(text, sub)
+
+            # ── Halfops ───────────────────────────────────────────────────
+            if _has_halfops:
+                hog = [r for r in _get_opvoice_top("halfop_given",   3) if r["value"] > 0]
+                hot = [r for r in _get_opvoice_top("halfop_taken",   3) if r["value"] > 0]
+                hgr = [r for r in _get_opvoice_top("halfop_got",     3) if r["value"] > 0]
+                hdr = [r for r in _get_opvoice_top("dehalfop_got",   3) if r["value"] > 0]
+
+                if hog:
+                    text = (f"<b>{hog[0]['nick']}</b> dishes out halfops generously — "
+                            f"<b>{hog[0]['value']}</b> times so far.")
+                    sub  = (f"<b>{hog[1]['nick']}</b> also gave halfops "
+                            f"<b>{hog[1]['value']}</b> times."
+                            if len(hog) > 1 else None)
+                    hicell(text, sub)
+
+                if hot:
+                    text = (f"<b>{hot[0]['nick']}</b> took halfops away "
+                            f"<b>{hot[0]['value']}</b> times.")
+                    hicell(text)
+
+                if hgr:
+                    text = (f"<b>{hgr[0]['nick']}</b> received halfops "
+                            f"<b>{hgr[0]['value']}</b> times.")
+                    hicell(text)
+
+                if hdr:
+                    text = (f"<b>{hdr[0]['nick']}</b> had their halfops removed "
+                            f"<b>{hdr[0]['value']}</b> times.")
+                    hicell(text)
+
+            # ── Voice ─────────────────────────────────────────────────────
+            if _has_voice:
+                vg = [r for r in _get_opvoice_top("voice_given",  3) if r["value"] > 0]
+                vt = [r for r in _get_opvoice_top("voice_taken",  3) if r["value"] > 0]
+                vr = [r for r in _get_opvoice_top("voice_got",    3) if r["value"] > 0]
+                dv = [r for r in _get_opvoice_top("devoice_got",  3) if r["value"] > 0]
+
+                if vg:
+                    text = (f"<b>{vg[0]['nick']}</b> is very generous with voice, "
+                            f"handing it out <b>{vg[0]['value']}</b> times.")
+                    sub  = (f"<b>{vg[1]['nick']}</b> was also quite vocal about giving voice, "
+                            f"<b>{vg[1]['value']}</b> times."
+                            if len(vg) > 1 else None)
+                    hicell(text, sub)
+
+                if vt:
+                    text = (f"<b>{vt[0]['nick']}</b> took voice away "
+                            f"<b>{vt[0]['value']}</b> times — someone had to.")
+                    sub  = (f"<b>{vt[1]['nick']}</b> also silenced people "
+                            f"<b>{vt[1]['value']}</b> times."
+                            if len(vt) > 1 else None)
+                    hicell(text, sub)
+
+                if vr:
+                    text = (f"<b>{vr[0]['nick']}</b> was voiced "
+                            f"<b>{vr[0]['value']}</b> times — they must have something to say.")
+                    sub  = (f"<b>{vr[1]['nick']}</b> also got voice "
+                            f"<b>{vr[1]['value']}</b> times."
+                            if len(vr) > 1 else None)
+                    hicell(text, sub)
+
+                if dv:
+                    text = (f"<b>{dv[0]['nick']}</b> got devoiced "
+                            f"<b>{dv[0]['value']}</b> times. Ouch.")
+                    sub  = (f"<b>{dv[1]['nick']}</b> also lost voice "
+                            f"<b>{dv[1]['value']}</b> times."
+                            if len(dv) > 1 else None)
+                    hicell(text, sub)
+
+            h('</table>')
 
     # ── Legend ────────────────────────────────────────────────────────────────
     if pisg.get("ShowLegend", True):

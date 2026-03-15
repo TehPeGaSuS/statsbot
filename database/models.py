@@ -77,6 +77,18 @@ def init_db():
             questions   INTEGER DEFAULT 0,
             minutes     INTEGER DEFAULT 0,
             topics      INTEGER DEFAULT 0,
+            op_given    INTEGER DEFAULT 0,   -- times this nick gave +o
+            op_taken    INTEGER DEFAULT 0,   -- times this nick removed -o
+            op_got      INTEGER DEFAULT 0,   -- times this nick received +o
+            deop_got    INTEGER DEFAULT 0,   -- times this nick received -o
+            voice_given INTEGER DEFAULT 0,   -- times this nick gave +v
+            voice_taken INTEGER DEFAULT 0,   -- times this nick removed -v
+            voice_got   INTEGER DEFAULT 0,   -- times this nick received +v
+            devoice_got INTEGER DEFAULT 0,   -- times this nick received -v
+            halfop_given INTEGER DEFAULT 0,  -- times this nick gave +h
+            halfop_taken INTEGER DEFAULT 0,  -- times this nick removed -h
+            halfop_got  INTEGER DEFAULT 0,   -- times this nick received +h
+            dehalfop_got INTEGER DEFAULT 0,  -- times this nick received -h
             attacked    INTEGER DEFAULT 0,   -- times this nick was the victim of violence
             violent_ex  TEXT,               -- example violent line (attacker)
             attacked_ex TEXT,               -- example attacked line (victim)
@@ -294,6 +306,18 @@ def _migrate():
         ("stats",    "foul_ex",       "TEXT"),
         ("stats",    "action_ex",     "TEXT"),
         ("channel_words", "last_used_by", "TEXT"),
+        ("stats", "op_given",     "INTEGER DEFAULT 0"),
+        ("stats", "op_taken",     "INTEGER DEFAULT 0"),
+        ("stats", "op_got",       "INTEGER DEFAULT 0"),
+        ("stats", "deop_got",     "INTEGER DEFAULT 0"),
+        ("stats", "voice_given",  "INTEGER DEFAULT 0"),
+        ("stats", "voice_taken",  "INTEGER DEFAULT 0"),
+        ("stats", "voice_got",    "INTEGER DEFAULT 0"),
+        ("stats", "devoice_got",  "INTEGER DEFAULT 0"),
+        ("stats", "halfop_given", "INTEGER DEFAULT 0"),
+        ("stats", "halfop_taken", "INTEGER DEFAULT 0"),
+        ("stats", "halfop_got",   "INTEGER DEFAULT 0"),
+        ("stats", "dehalfop_got", "INTEGER DEFAULT 0"),
         ("urls",     "count",         "INTEGER DEFAULT 1"),
     ]
     with get_conn() as conn:

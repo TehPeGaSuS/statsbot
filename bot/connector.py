@@ -354,9 +354,11 @@ class IRCConnector:
             host = host_from_prefix(prefix)
             target = params[0] if params else ""
             mode_str = params[1] if len(params) > 1 else ""
-            mode_target = params[2] if len(params) > 2 else ""
+            # Pass all mode targets (params[2:]) to support multi-target modes
+            # like +oov Nick1 Nick2 Nick3
+            mode_targets = params[2:] if len(params) > 2 else []
             if target.startswith(('#', '&')):
-                self.sensors.on_mode(nick, host, target, mode_str, mode_target)
+                self.sensors.on_mode(nick, host, target, mode_str, mode_targets)
 
         elif command == "TOPIC":
             nick = nick_from_prefix(prefix)

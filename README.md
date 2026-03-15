@@ -22,6 +22,7 @@ live web dashboard — no log files, no cron jobs, no static HTML generation.
 | Peak users | ✗ | ✓ with timestamp |
 | Live user count | ✗ | ✓ updates every 30s |
 | Karma (`nick++` / `nick--`) | ✓ | ✓ |
+| Op/voice/halfop stats | ✓ | ✓ |
 | Multi-network | ✗ | ✓ |
 | Admin via IRC | ✗ | ✓ via PM commands |
 
@@ -56,6 +57,8 @@ option names — `ActiveNicks`, `ShowBigNumbers`, `WordHistory`, etc. — so the
 - **Peak users** with date
 - **Live user count** badge, updates every 30 seconds
 - **Multi-network** — connect to Libera, Undernet, PTirc simultaneously
+- **Op/voice/halfop stats** — who gave ops, who got deopped, who hands out voice;
+  pisg-style prose sentences; `ShowOps`, `ShowVoice`, `ShowHalfops` toggles
 - **Fully clickable cards** on the landing and network pages
 - **PM admin interface** — identify, ignore management, master management
 - **bcrypt password auth** — session lasts until disconnect, works from any nick
@@ -317,7 +320,7 @@ see the "not yet implemented" table below for what's missing.
 | Daily activity graph (lines per day) | Not yet |
 | NickTracking / nick aliases | Not yet |
 | Music charts (`now playing:`) | Not yet |
-| Op/voice/halfop statistics | Not yet |
+| Op/voice/halfop statistics | ✓ |
 | `ShowTime` (when-active time bar) | Not yet |
 
 All other pisg features are implemented. Contributions welcome.

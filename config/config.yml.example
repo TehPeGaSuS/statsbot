@@ -116,6 +116,9 @@ pisg:
   ShowMostActiveByHour: true   # most active nicks by hour table (pisg: ShowMostActiveByHour)
   ShowSmileys: true            # per-smiley frequency table (pisg: ShowSmileys)
   ShowMrn: true                # most referenced nicks (pisg: ShowMrn)
+  ShowOps: true                # ops given/taken/received section (pisg: ShowOps)
+  ShowVoice: true              # voice given/taken/received section (pisg: ShowVoice)
+  ShowHalfops: true            # halfops section (pisg: ShowHalfops)
   ShowKarma: true              # karma leaderboard (nick++ / nick--)
   KarmaHistory: 10             # max nicks shown in karma table
   ShowMru: true                # most referenced URLs (pisg: ShowMru)
@@ -132,4 +135,3 @@ pisg:
   ActiveNicksByHour: 10        # rows in most active by hour (pisg: ActiveNicksByHour)
 
   # Page
-  Maintainer: ""               # maintainer name shown in footer (pisg: Maintainer)

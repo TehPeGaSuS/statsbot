@@ -402,6 +402,23 @@ Show the "Most referenced URLs" section. URLs are deduplicated — repeated
 posts of the same URL increment the count.
 **Default:** `true` — pisg default: true
 
+#### `ShowOps`
+Show the "Ops, voice and halfops" section — who gave ops most, who got
+deopped, who hands out voice, etc. Rendered as pisg-style prose sentences.
+Only appears if op events have actually been recorded; silently omitted on
+channels with no op activity.
+**Default:** `true` — pisg default: true
+
+#### `ShowVoice`
+Show voice-related sentences within the ops section (+v/-v).
+**Default:** `true` — pisg default: true
+
+#### `ShowHalfops`
+Show halfop sentences within the ops section (+h/-h). Halfops are supported
+on some IRC networks (UnrealIRCd, InspIRCd). Silently omitted if no halfop
+events have been recorded.
+**Default:** `true` — pisg default: true
+
 #### `ShowLegend`
 Show the page legend/footer with totals (lines, nicks, avg wpl, avg cpl,
 topics set count).
@@ -485,14 +502,6 @@ channel message:
 - Karma is stored per-channel; a nick's score on one network/channel is
   independent of any other.
 
----
-
-### Page
-
-#### `Maintainer`
-Name shown in the page footer ("stats by X"). Can be your nick or the
-bot's name.
-**Default:** `""` (empty, not shown)
 
 ---
 
@@ -532,6 +541,7 @@ logging:
 | Peak users | Not tracked | Tracked with timestamp |
 | Live count | Not possible | Yes, polls every 30s |
 | Karma (`nick++`) | Yes | Yes |
+| Op/voice/halfop stats | Yes | Yes |
 | User pictures | Yes | Not yet |
 | Gender stats | Yes | Not yet |
 | Music charts | Yes | Not yet |
