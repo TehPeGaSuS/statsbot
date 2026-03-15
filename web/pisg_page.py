@@ -548,9 +548,9 @@ b {{ color: var(--cyan); }}
             _bignum_row("No actions in this channel!")
 
     # Most foul
-    if pisg.get("ShowBigNumbers", False) and qualified:
+    if pisg.get("ShowBigNumbers", True) and qualified:
         fdata = {n: nick_stats[n].get("foul", 0) / max(nick_stats[n].get("words", 1), 1)
-                 for n in qualified if nick_stats[n].get("foul", 0) > 0 and nick_stats[n].get("lines", 0) > 15}
+                 for n in qualified if nick_stats[n].get("foul", 0) > 0}
         if fdata:
             ranked_f = sorted(fdata, key=fdata.get, reverse=True)
             pct1f = f"{fdata[ranked_f[0]]*100:.1f}"
