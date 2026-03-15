@@ -92,11 +92,11 @@ def count_foul(text: str, foul_words: List[str]) -> int:
     return sum(1 for w in words if w.strip(".,!?;:\"'") in foul_words)
 
 
-def is_all_caps(text: str, min_words: int = 3, threshold: float = 0.75) -> bool:
-    """True if this line is shouted (mostly uppercase, at least min_words words)."""
-    words = text.split()
-    if len(words) < min_words:
-        return False
+def is_all_caps(text: str, threshold: float = 0.75) -> bool:
+    """True if this line is shouted (mostly uppercase).
+    Matches pisg behaviour: no minimum word count, just checks the
+    uppercase ratio of alphabetic characters (min 4 alpha chars).
+    """
     alpha = [c for c in text if c.isalpha()]
     if len(alpha) < 4:
         return False
