@@ -382,7 +382,10 @@ def expire_nicks(days: int, network: str = None):
 
 STAT_COLS = {
     "words", "letters", "lines", "actions", "modes", "bans",
-    "kicks", "kick_given", "nicks", "joins", "smileys", "sad", "caps", "violent", "attacked", "foul", "monologues", "questions", "minutes", "topics"
+    "kicks", "kick_given", "nicks", "joins", "smileys", "sad", "caps", "violent", "attacked", "foul", "monologues", "questions", "minutes", "topics",
+    "op_given", "op_taken", "op_got", "deop_got",
+    "voice_given", "voice_taken", "voice_got", "devoice_got",
+    "halfop_given", "halfop_taken", "halfop_got", "dehalfop_got",
 }
 
 def incr(nick_id: int, stat: str, value: int = 1):
