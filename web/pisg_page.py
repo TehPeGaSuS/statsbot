@@ -139,24 +139,61 @@ def build_page(network: str, channel: str, period: int, config: dict) -> str:
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
 <style>
 :root {{
-  --bg:       #0d0d1a;
-  --bg2:      #1a1a2e;
-  --bg3:      #1e2245;
-  --border:   #2a3860;
-  --text:     #c8d3f5;
-  --muted:    #565f89;
-  --blue:     #7aa2f7;
-  --green:    #9ece6a;
-  --yellow:   #e0af68;
-  --red:      #f7768e;
-  --cyan:     #7dcfff;
+  --bg:      #0d0d1a;
+  --bg2:     #1a1a2e;
+  --bg3:     #1e2245;
+  --border:  #2a3860;
+  --text:    #c8d3f5;
+  --muted:   #565f89;
+  --faint:   #3d4a6b;
+  --blue:    #7aa2f7;
+  --green:   #9ece6a;
+  --yellow:  #e0af68;
+  --red:     #f7768e;
+  --cyan:    #7dcfff;
+  --tab-act: #3850B8;
+  --header-grad: linear-gradient(135deg,#1a1a3e,var(--bg));
+}}
+body.light {{
+  --bg:      #f5f6fa;
+  --bg2:     #ffffff;
+  --bg3:     #e8eaf0;
+  --border:  #c5cade;
+  --text:    #1e2245;
+  --muted:   #6b7299;
+  --faint:   #9299b8;
+  --blue:    #3558d6;
+  --green:   #3a7d0e;
+  --yellow:  #a06000;
+  --red:     #c0132a;
+  --cyan:    #0077aa;
+  --tab-act: #3558d6;
+  --header-grad: linear-gradient(135deg,#dde2f5,var(--bg));
+}}
+@media (prefers-color-scheme: light) {{
+  :root:not(.dark-override) {{
+    --bg:      #f5f6fa;
+    --bg2:     #ffffff;
+    --bg3:     #e8eaf0;
+    --border:  #c5cade;
+    --text:    #1e2245;
+    --muted:   #6b7299;
+    --faint:   #9299b8;
+    --blue:    #3558d6;
+    --green:   #3a7d0e;
+    --yellow:  #a06000;
+    --red:     #c0132a;
+    --cyan:    #0077aa;
+    --tab-act: #3558d6;
+    --header-grad: linear-gradient(135deg,#dde2f5,var(--bg));
+  }}
 }}
 * {{ box-sizing: border-box; margin: 0; padding: 0; }}
 body {{ background: var(--bg); color: var(--text);
         font-family: 'Segoe UI', Tahoma, sans-serif; font-size: 14px; }}
 
 /* Header */
-.page-header {{ background: linear-gradient(135deg, #1a1a3e, var(--bg));
+.page-header {{ background: var(--header-grad);
                 border-bottom: 1px solid var(--border); padding: 1.5rem 2rem; }}
 .page-header a {{ color: var(--blue); text-decoration: none; font-size: .85rem; }}
 .page-header h1 {{ font-size: 1.8rem; color: var(--blue); margin: .3rem 0 .2rem; }}
@@ -188,7 +225,7 @@ h2.section-title {{ font-size: .8rem; color: var(--blue); text-transform: upperc
                overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }}
 .bar-wrap {{ background: var(--bg3); border-radius: 3px; height: 10px; width: 140px; }}
 .bar-fill {{ height: 100%; border-radius: 3px;
-             background: linear-gradient(90deg, #3850B8, var(--blue)); }}
+             background: linear-gradient(90deg, var(--tab-act), var(--blue)); }}
 
 /* Also active */
 .also-active {{ color: var(--muted); font-size: .82rem; margin: .5rem 0 1.5rem; }}
@@ -252,7 +289,7 @@ b {{ color: var(--cyan); }}
 .tabs {{ display: flex; gap: .4rem; margin-bottom: 1.5rem; flex-wrap: wrap; }}
 .tab {{ padding: .35rem .9rem; border-radius: 20px; border: 1px solid var(--border);
         color: var(--muted); text-decoration: none; font-size: .82rem; }}
-.tab.active {{ background: #3850B8; color: #fff; border-color: #3850B8; }}
+.tab.active {{ background: var(--tab-act); color: #fff; border-color: var(--tab-act); }}
 .tab:hover:not(.active) {{ border-color: var(--blue); color: var(--blue); }}
 
 /* Legend */
@@ -260,6 +297,18 @@ b {{ color: var(--cyan); }}
            padding: 1rem; font-size: .82rem; color: var(--muted); margin-top: 2rem; }}
 .legend b {{ color: var(--text); }}
 
+
+/* ── Theme toggle ── */
+.theme-toggle {{
+  position: fixed; bottom: 1.2rem; right: 1.2rem; z-index: 999;
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: 50%; width: 2.4rem; height: 2.4rem;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; font-size: 1.1rem; box-shadow: 0 2px 8px rgba(0,0,0,.3);
+  transition: background .2s, border-color .2s;
+  user-select: none;
+}}
+.theme-toggle:hover {{ border-color: var(--blue); }}
 .footer {{ text-align: center; color: var(--muted); font-size: .78rem;
            margin: 2rem 0 1rem; border-top: 1px solid var(--bg3); padding-top: 1rem; }}
 
@@ -875,6 +924,7 @@ b {{ color: var(--cyan); }}
 
     # ── Footer ────────────────────────────────────────────────────────────────
     h(f'<div class="footer"><a href="{project_url}" style="color:var(--muted)">Statsbot</a> — inspired by pisg by Morten Brix Pedersen and others</div>')
+    h('<button class="theme-toggle" id="themeToggle" title="Toggle light/dark"></button>')
     h('</div>') # /container
 
     # ── JavaScript ───────────────────────────────────────────────────────────
@@ -898,8 +948,11 @@ new Chart(document.getElementById('hourChart'), {{
     responsive: true, maintainAspectRatio: false,
     plugins: {{ legend: {{ display: false }} }},
     scales: {{
-      x: {{ grid: {{ color: '#1a1a3e' }}, ticks: {{ color: '#565f89', font: {{ size: 10 }} }} }},
-      y: {{ grid: {{ color: '#1a1a3e' }}, ticks: {{ color: '#565f89' }}, beginAtZero: true }}
+      x: {{ grid: {{ color: getComputedStyle(document.body).getPropertyValue('--bg3').trim() }},
+           ticks: {{ color: getComputedStyle(document.body).getPropertyValue('--muted').trim(), font: {{ size: 10 }} }} }},
+      y: {{ grid: {{ color: getComputedStyle(document.body).getPropertyValue('--bg3').trim() }},
+           ticks: {{ color: getComputedStyle(document.body).getPropertyValue('--muted').trim() }},
+           beginAtZero: true }}
     }}
   }}
 }});
@@ -921,6 +974,39 @@ new Chart(document.getElementById('hourChart'), {{
   update();
   setInterval(update, 30000);
 }})();
+</script>
+""")
+    h("""<script>
+(function() {
+  var btn = document.getElementById('themeToggle');
+  function getTheme() { return localStorage.getItem('theme'); }
+  function applyTheme(t) {
+    var root = document.documentElement;
+    if (t === 'light') {
+      document.body.classList.add('light');
+      root.classList.remove('dark-override');
+      btn.textContent = '🌙';
+    } else if (t === 'dark') {
+      document.body.classList.remove('light');
+      root.classList.add('dark-override');
+      btn.textContent = '☀️';
+    } else {
+      document.body.classList.remove('light');
+      root.classList.remove('dark-override');
+      var preferLight = window.matchMedia('(prefers-color-scheme: light)').matches;
+      btn.textContent = preferLight ? '🌙' : '☀️';
+    }
+  }
+  applyTheme(getTheme());
+  btn.addEventListener('click', function() {
+    var cur = getTheme();
+    // If no preference stored, treat current effective theme as the baseline
+    if (!cur) { cur = window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark'; }
+    var next = (cur === 'light') ? 'dark' : 'light';
+    localStorage.setItem('theme', next);
+    applyTheme(next);
+  });
+})();
 </script>
 </body>
 </html>""")
