@@ -68,7 +68,8 @@ option names — `ActiveNicks`, `ShowBigNumbers`, `WordHistory`, etc. — so the
 ## Requirements
 
 - Python 3.11+
-- `pip install flask pyyaml bcrypt`
+- A virtualenv (required on Debian 12+, Ubuntu 24.04+, and any distro that
+  ships PEP 668 — direct `pip install` into the system Python is blocked)
 
 ---
 
@@ -79,19 +80,26 @@ option names — `ActiveNicks`, `ShowBigNumbers`, `WordHistory`, etc. — so the
 git clone https://github.com/yourusername/ircstats.git
 cd ircstats
 
-# 2. Install dependencies
+# 2. Create and activate a virtualenv
+python3 -m venv .venv
+source .venv/bin/activate
+
+# 3. Install dependencies
 pip install -r requirements.txt
 
-# 3. Configure
+# 4. Configure
 cp config/config.yml.example config/config.yml
 nano config/config.yml          # set your networks, channels, nick
 
-# 4. Set up master password(s) — interactive wizard
+# 5. Set up master password(s) — interactive wizard
 python main.py --setup
 
-# 5. Run
+# 6. Run
 python main.py
 ```
+
+> **Debian 12+ / Ubuntu 24.04+ note:** these distros enforce PEP 668 and block
+> `pip install` outside a virtualenv. Always use `.venv` as shown above.
 
 The web dashboard is at `http://localhost:8033/` by default.
 
@@ -184,6 +192,51 @@ in the `pisg:` config section.
 
 ## Running as a service
 
+Two options: a **user unit** (recommended — no root required, starts on login
+or boot if lingering is enabled) or a **system unit** (runs as a dedicated
+user, requires root to install).
+
+### User unit (recommended)
+
+```ini
+# ~/.config/systemd/user/ircstats.service
+[Unit]
+Description=ircstats IRC statistics bot
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=%h/ircstats
+ExecStart=%h/ircstats/.venv/bin/python main.py
+Restart=on-failure
+RestartSec=30
+Environment=PYTHONUNBUFFERED=1
+
+[Install]
+WantedBy=default.target
+```
+
+```bash
+# Install and start
+systemctl --user daemon-reload
+systemctl --user enable --now ircstats
+
+# Optional: keep running after logout (requires root once)
+loginctl enable-linger $USER
+
+# Useful commands
+systemctl --user status ircstats
+journalctl --user -u ircstats -f
+```
+
+`%h` expands to your home directory. Adjust `WorkingDirectory` and
+`ExecStart` if you cloned ircstats somewhere other than `~/ircstats`.
+
+### System unit
+
+Use this if you want ircstats to run as a dedicated system user
+(e.g. `ircstats`) rather than your own account.
+
 ```ini
 # /etc/systemd/system/ircstats.service
 [Unit]
@@ -192,18 +245,29 @@ After=network.target
 
 [Service]
 Type=simple
-User=youruser
-WorkingDirectory=/home/youruser/ircstats
-ExecStart=/home/youruser/virtualenv/bin/python main.py
+User=ircstats
+WorkingDirectory=/opt/ircstats
+ExecStart=/opt/ircstats/.venv/bin/python main.py
 Restart=on-failure
 RestartSec=30
+Environment=PYTHONUNBUFFERED=1
 
 [Install]
 WantedBy=multi-user.target
 ```
 
 ```bash
-systemctl enable --now ircstats
+# Create a dedicated user (no login shell, no home directory)
+sudo useradd -r -s /usr/sbin/nologin -d /opt/ircstats ircstats
+sudo mkdir -p /opt/ircstats
+sudo chown ircstats:ircstats /opt/ircstats
+
+# Install and start (as root)
+sudo systemctl daemon-reload
+sudo systemctl enable --now ircstats
+
+# Logs
+sudo journalctl -u ircstats -f
 ```
 
 ---
