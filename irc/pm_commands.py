@@ -70,6 +70,7 @@ class PMCommandHandler:
             "reload":   lambda: self._cmd_reload(nick),
             "nets":     lambda: self._cmd_nets(nick),
             "chans":    lambda: self._cmd_chans(nick),
+            "setlang":  lambda: self._cmd_setlang(nick, args),
         }
 
         handler = handlers.get(cmd)
@@ -444,6 +445,25 @@ class PMCommandHandler:
         self._post_event({"action": "remove_network", "name": name})
         self.send(nick, f"Network {name} removed and all its stats deleted.")
 
+    def _cmd_setlang(self, nick: str, args: str):
+        """setlang [-network <net>] #channel en_US|pt_PT|fr_FR|it_IT"""
+        if not self._require_auth(nick): return
+        from i18n import set_lang, SUPPORTED
+        parsed = self._parse_flags(args)
+        network = parsed["flags"].get("network", self.network)
+        positional = parsed["positional"]
+        # Expect: #channel lang  OR  lang #channel
+        chan = next((p for p in positional if p.startswith("#")), "")
+        lang = next((p for p in positional if not p.startswith("#")), "")
+        if not chan or not lang:
+            self.send(nick, f"Usage: setlang [-network <net>] #channel <lang>")
+            self.send(nick, f"Supported: {", ".join(SUPPORTED)}")
+            return
+        if not set_lang(network, chan, lang):
+            self.send(nick, f"Unsupported language {lang!r}. Supported: {", ".join(SUPPORTED)}")
+            return
+        self.send(nick, f"Language for {chan} on {network} set to {lang}.")
+
     def _cmd_reload(self, nick: str):
         if not self._require_auth(nick): return
         self.send(nick, "Changes apply immediately — no reload needed.")
@@ -485,6 +505,7 @@ class PMCommandHandler:
             "  master add <nick>  |  master del <nick>  |  master list",
             "  set page [#chan] <url>",
             "  nets                                       — list all networks",
+            "  setlang [-network <net>] #channel <lang>     — set channel language (en_US/pt_PT/fr_FR/it_IT)",
             "  chans                                      — list channels on this network",
             "  addchan [-network <net>] #channel          — join and track a channel",
             "  delchan [-network <net>] #channel          — part and delete channel stats",

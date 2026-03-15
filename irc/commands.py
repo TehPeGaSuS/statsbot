@@ -9,6 +9,7 @@ Public channel commands — lightweight, point to the web page for detail.
 
 import logging
 import time
+from i18n import t, get_lang
 
 log = logging.getLogger("commands")
 
@@ -76,7 +77,8 @@ class CommandHandler:
                 port = web.get("port", 8033)
                 chan_slug = channel.lstrip("#")
                 url = f"http://localhost:{port}/{self.network}/{chan_slug}/"
-        self.send(channel, f"Stats for {channel}: {url}")
+        lang = get_lang(self.network, channel)
+        self.send(channel, t("cmd_stats_url", lang, channel=channel, url=url))
 
     def _cmd_top(self, channel: str, args: str):
         try:
@@ -86,10 +88,13 @@ class CommandHandler:
         from database.models import get_top
         rows = [r for r in get_top(self.network, channel, "words", 0, n) if r["value"] > 0]
         if not rows:
-            self.send(channel, "No stats yet.")
+            lang = get_lang(self.network, channel)
+            self.send(channel, t("cmd_stats_no_stats", lang))
             return
         parts = [f"#{i+1} {r['nick']}: {r['value']}" for i, r in enumerate(rows)]
-        self.send(channel, f"{channel} top {len(rows)}: " + ", ".join(parts))
+        lang = get_lang(self.network, channel)
+        self.send(channel, t("cmd_top_result", lang, channel=channel,
+                             n=len(rows), list=", ".join(parts)))
 
     def _cmd_quote(self, channel: str, args: str):
         target = args.strip() or None
@@ -97,13 +102,17 @@ class CommandHandler:
         if target:
             q = get_quote_for_nick(target, self.network, channel)
             if not q:
-                self.send(channel, f"No quotes for {target}.")
+                lang = get_lang(self.network, channel)
+                self.send(channel, t("cmd_quote_none_for_nick", lang, nick=target))
                 return
             nick_str = target
         else:
             q = get_random_quote(self.network, channel)
             if not q:
-                self.send(channel, "No quotes yet.")
+                lang = get_lang(self.network, channel)
+                self.send(channel, t("cmd_quote_none", lang))
                 return
             nick_str = q.get("nick") or "unknown"
-        self.send(channel, f'{nick_str}\'s random quote: "{q["quote"]}"')
+        lang = get_lang(self.network, channel)
+        self.send(channel, t("cmd_quote_result", lang,
+                            nick=nick_str, quote=q["quote"]))

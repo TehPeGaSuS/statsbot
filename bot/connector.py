@@ -56,12 +56,13 @@ class IRCConnector:
         self.pm_handler = pm_handler
         self.scheduler = scheduler
 
-        # Identity: per-network overrides global bot: defaults
+        # Identity: per-network overrides global bot: defaults.
+        # DB rows may have NULL for optional fields — use `or` to skip None/empty.
         bot = config.get("bot", {})
-        self.nick     = network_cfg.get("nick",     bot.get("nick", "statsbot"))
-        self.altnick  = network_cfg.get("altnick",  bot.get("altnick",  self.nick + "_"))
-        self.realname = network_cfg.get("realname", bot.get("realname", "IRC Stats Bot"))
-        self.ident    = network_cfg.get("ident",    bot.get("ident",    "statsbot"))
+        self.nick     = (network_cfg.get("nick")     or bot.get("nick")     or "statsbot")
+        self.altnick  = (network_cfg.get("altnick")  or bot.get("altnick")  or self.nick + "_")
+        self.realname = (network_cfg.get("realname") or bot.get("realname") or "IRC Stats Bot")
+        self.ident    = (network_cfg.get("ident")    or bot.get("ident")    or "statsbot")
 
         self.host = network_cfg["host"]
         self.port = network_cfg.get("port", 6667)
