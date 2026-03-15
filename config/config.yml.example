@@ -122,6 +122,7 @@ pisg:
   ShowMuw: true                # most used words section (pisg: ShowMuw)
   ShowTopics: true             # latest topics section (pisg: ShowTopics)
   ShowTime: true               # per-nick activity time bar in main table (pisg: ShowTime)
+  ShowMostActiveByHourGraph: true  # colour bars in most active nicks by hours table (pisg: ShowMostActiveByHourGraph)
   ShowVoice: false             # voice given/taken/received section (pisg: ShowVoices, default: disabled)
   ShowHalfops: false           # halfops section (pisg: ShowHalfops, default: disabled)
   ShowKarma: true              # karma leaderboard (nick++ / nick--)

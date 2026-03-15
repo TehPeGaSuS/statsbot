@@ -306,6 +306,7 @@ def _migrate():
         ("stats",    "foul_ex",       "TEXT"),
         ("stats",    "action_ex",     "TEXT"),
         ("channel_words", "last_used_by", "TEXT"),
+        ("channel_words", "display_word", "TEXT"),
         ("stats", "op_given",     "INTEGER DEFAULT 0"),
         ("stats", "op_taken",     "INTEGER DEFAULT 0"),
         ("stats", "op_got",       "INTEGER DEFAULT 0"),
@@ -496,16 +497,20 @@ def get_nick_all_stats(nick: str, network: str, channel: str,
 
 def incr_word(nick_id: int, network: str, channel: str, word: str,
               nick: str = "", count: int = 1):
+    word_key = word.lower()          # lowercase key for counting/dedup
     with get_conn() as conn:
         conn.execute(
             "INSERT INTO wordstats(nick_id,network,channel,word,count) VALUES(?,?,?,?,?) "
             "ON CONFLICT(nick_id,word) DO UPDATE SET count=count+?",
-            (nick_id, network, channel, word, count, count)
+            (nick_id, network, channel, word_key, count, count)
         )
         conn.execute(
-            """INSERT INTO channel_words(network,channel,word,count,last_used_by) VALUES(?,?,?,?,?)
-               ON CONFLICT(network,channel,word) DO UPDATE SET count=count+?, last_used_by=excluded.last_used_by""",
-            (network, channel, word, count, nick, count, )
+            """INSERT INTO channel_words(network,channel,word,count,last_used_by,display_word) VALUES(?,?,?,?,?,?)
+               ON CONFLICT(network,channel,word) DO UPDATE SET
+                 count=count+?,
+                 last_used_by=excluded.last_used_by,
+                 display_word=excluded.display_word""",
+            (network, channel, word_key, count, nick, word, count)
         )
 
 
@@ -521,7 +526,7 @@ def get_top_words_nick(nick_id: int, limit: int = 10) -> List[Dict]:
 def get_top_words_channel(network: str, channel: str, limit: int = 10) -> List[Dict]:
     with get_conn() as conn:
         rows = conn.execute(
-            "SELECT word, count, last_used_by FROM channel_words WHERE network=? AND channel=? ORDER BY count DESC LIMIT ?",
+            "SELECT COALESCE(display_word, word) as word, count, last_used_by FROM channel_words WHERE network=? AND channel=? ORDER BY count DESC LIMIT ?",
             (network, channel, limit)
         ).fetchall()
         return [dict(r) for r in rows]

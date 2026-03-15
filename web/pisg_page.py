@@ -67,6 +67,25 @@ def build_page(network: str, channel: str, period: int, config: dict) -> str:
     karma_top    = get_karma_top(network, channel, pisg.get("KarmaHistory", 10)) if pisg.get("ShowKarma", True) else []
     karma_bottom = get_karma_bottom(network, channel, 5) if pisg.get("ShowKarma", True) else []
 
+    # Per-nick hourly band totals (used by ShowTime and ShowMostActiveByHour)
+    _bands_def = [(0,5), (6,11), (12,17), (18,23)]
+    nick_band_lines = {}
+    with get_conn() as _hconn:
+        _hr_rows = _hconn.execute("""
+            SELECT n.nick, ha.hour, ha.lines
+            FROM hourly_activity ha
+            JOIN nicks n ON n.id=ha.nick_id
+            WHERE n.network=? AND n.channel=?
+        """, (network, channel)).fetchall()
+    for _hr in _hr_rows:
+        _hn = _hr["nick"]; _hh = _hr["hour"]; _hl = _hr["lines"]
+        if _hn not in nick_band_lines:
+            nick_band_lines[_hn] = [0, 0, 0, 0]
+        for _bi, (_lo, _hi) in enumerate(_bands_def):
+            if _lo <= _hh <= _hi:
+                nick_band_lines[_hn][_bi] += _hl
+                break
+
     # Active nicks (sorted by words or lines)
     sort_by  = "words" if pisg.get("SortByWords", True) else "lines"
     top_n    = pisg.get("ActiveNicks", 25)
@@ -268,8 +287,13 @@ b {{ color: var(--cyan); }}
 .byhour-table td {{ padding: .38rem .8rem; border-bottom: 1px solid var(--bg3); font-size: .88rem; }}
 .byhour-table .rank {{ color: var(--muted); width: 36px; text-align: center; }}
 .byhour-table .rank-1 {{ color: var(--yellow); font-weight: bold; }}
-.byhour-cell {{ color: var(--green); }}
+.byhour-cell {{ color: var(--fg); }}
 .byhour-cell .cnt {{ color: var(--muted); font-size: .78rem; margin-left: .3rem; }}
+.band-legend {{ display: flex; gap: 1.5rem; justify-content: center; font-size: .82rem; color: var(--muted); margin: .5rem 0 1rem; }}
+.bh-bar.blue-h   {{ background: #4a7ab5; border-radius: 2px; }}
+.bh-bar.green-h  {{ background: #4a9b5e; border-radius: 2px; }}
+.bh-bar.yellow-h {{ background: #b5963a; border-radius: 2px; }}
+.bh-bar.red-h    {{ background: #b54a4a; border-radius: 2px; }}
 
 /* Word cloud */
 .word-cloud {{ display: flex; flex-wrap: wrap; gap: .35rem; margin-bottom: 1rem; }}
@@ -392,6 +416,13 @@ b {{ color: var(--cyan); }}
     if pisg.get("ShowActiveTimes", True):
         section("Most active times")
         h(f'<div class="chart-wrap"><canvas id="hourChart"></canvas></div>')
+        if pisg.get("ShowLegend", True):
+            h('<div class="band-legend">')
+            for _lc, _ll in [("bh-bar blue-h","0-5"), ("bh-bar green-h","6-11"),
+                              ("bh-bar yellow-h","12-17"), ("bh-bar red-h","18-23")]:
+                h(f'<span><span class="{_lc}" style="width:40px;height:15px;'
+                  f'display:inline-block;vertical-align:middle"></span> = {_ll}</span>')
+            h('</div>')
 
     # ── Main nick table ───────────────────────────────────────────────────────
     section("Most active nicks")
@@ -401,13 +432,15 @@ b {{ color: var(--cyan); }}
     show_words    = pisg.get("ShowWords", True)
     show_lines    = pisg.get("ShowLines", True)
     show_quote    = pisg.get("ShowRandQuote", True)
+    show_time     = pisg.get("ShowTime", True)
 
     h('<div class="tscroll"><table class="nick-table"><thead><tr>')
     h('<th class="rank">#</th><th>Nick</th>')
-    if show_lines: h('<th>Lines</th>')
-    if show_words: h('<th>Words</th>')
-    if show_wpl:   h('<th>wpl</th>')
-    if show_cpl:   h('<th>cpl</th>')
+    if show_lines: h('<th>Number of lines</th>')
+    if show_words: h('<th>Number of Words</th>')
+    if show_wpl:   h('<th>Words per line</th>')
+    if show_cpl:   h('<th>Chars per line</th>')
+    if show_time:  h('<th>When?</th>')
     if show_lastseen: h('<th>Last seen</th>')
     if show_quote: h('<th>Random quote</th>')
     h('</tr></thead><tbody>')
@@ -454,6 +487,18 @@ b {{ color: var(--cyan); }}
         if show_words: h(f'<td class="val">{words:,}</td>')
         if show_wpl:   h(f'<td>{wpl}</td>')
         if show_cpl:   h(f'<td>{cpl}</td>')
+        if show_time:
+            _nb = nick_band_lines.get(nick, [0, 0, 0, 0])
+            _nb_total = sum(_nb) or 1
+            _band_cols = ["blue-h", "green-h", "yellow-h", "red-h"]
+            _bars = ""
+            for _bi, _bv in enumerate(_nb):
+                _bw = max(1, int(_bv / _nb_total * 40)) if _bv else 0
+                if _bw:
+                    _bars += (f'<span class="bh-bar {_band_cols[_bi]}" ')
+                    _bars += (f'style="width:{_bw}px;display:inline-block;')
+                    _bars += (f'height:15px;vertical-align:middle"></span>')
+            h(f'<td style="white-space:nowrap">{_bars}</td>')
         if show_lastseen: h(f'<td class="small">{last}</td>')
         if show_quote: h(f'<td class="quote-cell" title="{q}">{q}</td>')
         h('</tr>')
@@ -488,7 +533,7 @@ b {{ color: var(--cyan); }}
             ranked = sorted(qdata, key=lambda n: qdata[n][0]/qdata[n][1], reverse=True)
             n1, (q1, l1) = ranked[0], qdata[ranked[0]]
             pct1 = f"{q1/l1*100:.1f}"
-            text = f"Is <b>{n1}</b> a little bit slower than the rest, or just asking too many questions? {pct1}% of lines contained a question!"
+            text = f"Is <b>{n1}</b> a little bit slower than the rest, or just asking too many questions?  {pct1}% lines contained a question!"
             sub  = f"<b>{ranked[1]}</b> didn't know that much either. {qdata[ranked[1]][0]/qdata[ranked[1]][1]*100:.1f}% of their lines were questions." if len(ranked) > 1 else None
             _bignum_row(text, sub)
 
@@ -625,154 +670,9 @@ b {{ color: var(--cyan); }}
 
     h('</table>')
 
-    # ── Other numbers ─────────────────────────────────────────────────────────
-    section("Other interesting numbers")
-    h('<table class="bignums">')
-
-    # Got kicked (victim)
-    if pisg.get("ShowBigNumbers", True):
-        kt = get_top(network, channel, "kicks", period, 3)
-        kt = [r for r in kt if r["value"] > 0]
-        if kt:
-            _kv = kt[0]["value"]
-            text = f"<b>{kt[0]['nick']}</b> wasn't very popular, getting kicked {_kv} {'time' if _kv == 1 else 'times'}!"
-            sub  = f"<b>{kt[1]['nick']}</b> seemed to be hated too with {kt[1]['value']} kicks." if len(kt) > 1 else None
-            _bignum_row(text, sub)
-
-    # Most kicks given
-    if pisg.get("ShowBigNumbers", True):
-        kg = get_top(network, channel, "kick_given", period, 3)
-        kg = [r for r in kg if r["value"] > 0]
-        if kg:
-            _kg0v = kg[0]["value"]
-            text = f"<b>{kg[0]['nick']}</b> is either insane or just a fair op, kicking a total of {_kg0v} {'person' if _kg0v == 1 else 'people'}!"
-            sub  = f"{kg[0]['nick']}'s faithful follower, <b>{kg[1]['nick']}</b>, kicked about {kg[1]['value']} people." if len(kg) > 1 else None
-            _bignum_row(text, sub)
-        else:
-            _bignum_row("Nice opers here, no one got kicked!")
-
-    # Ops given / taken (pisg order: given then taken)
-    show_ops     = pisg.get("ShowOps",     True)
-    show_voice   = pisg.get("ShowVoice",   False)  # pisg default: disabled
-    show_halfops = pisg.get("ShowHalfops", False)  # pisg default: disabled
-
-    def _get_opvoice_top(stat, limit=3):
-        return get_top(network, channel, stat, 0, limit)
-
-    if show_ops:
-        og = [r for r in _get_opvoice_top("op_given", 3) if r["value"] > 0]
-        ot = [r for r in _get_opvoice_top("op_taken", 3) if r["value"] > 0]
-        if og:
-            _ogv = og[0]["value"]
-            text = f"<b>{og[0]['nick']}</b> donated {_ogv} {'op' if _ogv == 1 else 'ops'} in the channel..."
-            sub  = f"<b>{og[1]['nick']}</b> was also generous with ops, giving {og[1]['value']} times." if len(og) > 1 else None
-            hicell(text, sub)
-        if ot:
-            _otv = ot[0]["value"]
-            text = f"<b>{ot[0]['nick']}</b> is the channel's deop machine, removing ops from <b>{_otv}</b> {'person' if _otv == 1 else 'people'}."
-            sub  = f"<b>{ot[1]['nick']}</b> also took ops away {ot[1]['value']} times." if len(ot) > 1 else None
-            hicell(text, sub)
-        elif og:
-            hicell(f"Wow, no op was taken on {channel}!")
-
-    if show_halfops:
-        hog = [r for r in _get_opvoice_top("halfop_given", 3) if r["value"] > 0]
-        hot = [r for r in _get_opvoice_top("halfop_taken", 3) if r["value"] > 0]
-        if hog:
-            _hv = hog[0]["value"]
-            text = f"<b>{hog[0]['nick']}</b> donated {_hv} {'halfop' if _hv == 1 else 'halfops'} in the channel..."
-            sub  = f"<b>{hog[1]['nick']}</b> also gave halfops {hog[1]['value']} times." if len(hog) > 1 else None
-            hicell(text, sub)
-        if hot:
-            _htv = hot[0]["value"]
-            text = f"<b>{hot[0]['nick']}</b> took halfops away {_htv} {'time' if _htv == 1 else 'times'}."
-            hicell(text)
-        elif hog:
-            hicell(f"Wow, no halfop was taken on {channel}!")
-
-    if show_voice:
-        vg = [r for r in _get_opvoice_top("voice_given", 3) if r["value"] > 0]
-        vt = [r for r in _get_opvoice_top("voice_taken", 3) if r["value"] > 0]
-        if vg:
-            _vgv = vg[0]["value"]
-            text = f"<b>{vg[0]['nick']}</b> is very generous with voice, handing it out <b>{_vgv}</b> {'time' if _vgv == 1 else 'times'}."
-            sub  = f"<b>{vg[1]['nick']}</b> was also quite vocal about giving voice, {vg[1]['value']} times." if len(vg) > 1 else None
-            hicell(text, sub)
-        if vt:
-            _vtv = vt[0]["value"]
-            text = f"<b>{vt[0]['nick']}</b> took voice away <b>{_vtv}</b> {'time' if _vtv == 1 else 'times'} — someone had to."
-            sub  = f"<b>{vt[1]['nick']}</b> also silenced people {vt[1]['value']} times." if len(vt) > 1 else None
-            hicell(text, sub)
-        elif vg:
-            hicell(f"Wow, no voice was taken on {channel}!")
-
-    # Most actions
-    if pisg.get("ShowBigNumbers", True):
-        ac = get_top(network, channel, "actions", period, 3)
-        ac = [r for r in ac if r["value"] > 0]
-        if ac:
-            _acv = ac[0]["value"]
-            text = f"<b>{ac[0]['nick']}</b> always lets us know what they're doing: {_acv} {'action' if _acv == 1 else 'actions'}!"
-            sub  = f"Also, <b>{ac[1]['nick']}</b> tells us what's up with {ac[1]['value']} actions." if len(ac) > 1 else None
-            ax   = nick_stats.get(ac[0]["nick"], {}).get("action_ex", None)
-            hicell(text, sub, example=ax)
-        else:
-            _bignum_row("No actions in this channel!")
-
-    # Monologues
-    if pisg.get("ShowBigNumbers", True) and qualified:
-        mdata = {n: nick_stats[n].get("monologues",0) for n in qualified if nick_stats[n].get("monologues",0) > 0}
-        if mdata:
-            ranked = sorted(mdata, key=mdata.get, reverse=True)
-            _mc  = mdata[ranked[0]]
-            text = f"<b>{ranked[0]}</b> talks to themselves a lot. They wrote over 5 lines in a row <b>{_mc}</b> {'time' if _mc == 1 else 'times'}!"
-            sub  = f"Another lonely one was <b>{ranked[1]}</b>, who managed to hit {mdata[ranked[1]]} times." if len(ranked) > 1 else None
-            _bignum_row(text, sub)
-
-    # Most joins
-    if pisg.get("ShowBigNumbers", True):
-        jn = get_top(network, channel, "joins", period, 1)
-        jn = [r for r in jn if r["value"] > 0]
-        if jn:
-            _jv = jn[0]["value"]
-            _bignum_row(f"<b>{jn[0]['nick']}</b> couldn't decide whether to stay or go. {_jv} {'join' if _jv == 1 else 'joins'} during this period!")
-
-    # Most foul
-    if pisg.get("ShowBigNumbers", True) and qualified:
-        fdata = {n: nick_stats[n].get("foul", 0) / max(nick_stats[n].get("words", 1), 1)
-                 for n in qualified if nick_stats[n].get("foul", 0) > 0}
-        if fdata:
-            ranked_f = sorted(fdata, key=fdata.get, reverse=True)
-            pct1f = f"{fdata[ranked_f[0]]*100:.1f}"
-            text  = f"<b>{ranked_f[0]}</b> has quite a potty mouth. {pct1f}% of their words were foul language."
-            sub   = f"<b>{ranked_f[1]}</b> also makes sailors blush, {fdata[ranked_f[1]]*100:.1f}% of the time." if len(ranked_f) > 1 else None
-            _fex  = nick_stats.get(ranked_f[0], {}).get("foul_ex", None)
-            ex    = f"&lt;{ranked_f[0]}&gt; {_fex}" if _fex else None
-            hicell(text, sub, example=ex)
-        else:
-            _bignum_row("Nobody is foul-mouthed here! Remarkable.")
-
-    h('</table>')  # close Other interesting numbers + ops/voice bignums
-
     # ── Most active nicks by hour ─────────────────────────────────────────────
     if pisg.get("ShowMostActiveByHour", True):
         bands = [(0,5,"0-5"), (6,11,"6-11"), (12,17,"12-17"), (18,23,"18-23")]
-        nick_band_lines = {}
-        with get_conn() as conn:
-            rows_hr = conn.execute("""
-                SELECT n.nick, ha.hour, ha.lines
-                FROM hourly_activity ha
-                JOIN nicks n ON n.id=ha.nick_id
-                WHERE n.network=? AND n.channel=?
-            """, (network, channel)).fetchall()
-        for r in rows_hr:
-            rnick = r["nick"]; hour = r["hour"]; rlines = r["lines"]
-            if rnick not in nick_band_lines:
-                nick_band_lines[rnick] = [0, 0, 0, 0]
-            for bi, (lo, hi, _) in enumerate(bands):
-                if lo <= hour <= hi:
-                    nick_band_lines[rnick][bi] += rlines
-                    break
         if nick_band_lines:
             n_bh_rows = pisg.get("ActiveNicksByHour", 10)
             band_ranked = []
@@ -783,7 +683,11 @@ b {{ color: var(--cyan); }}
                 band_ranked.append(ranked[:n_bh_rows])
             max_rows = max(len(b) for b in band_ranked)
             if max_rows > 0:
-                section("Most active nicks by hour")
+                section("Most active nicks by hours")
+                show_bh_graph = pisg.get("ShowMostActiveByHourGraph", True)
+                # Per-band max for scaling bars (independent per column like pisg)
+                band_max = [band_ranked[bi][0][1] if band_ranked[bi] else 1 for bi in range(4)]
+                band_colors = ["blue-h", "green-h", "yellow-h", "red-h"]
                 h('<div class="tscroll"><table class="byhour-table"><thead><tr>')
                 h('<th class="rank">#</th>')
                 for _, _, label in bands:
@@ -795,7 +699,15 @@ b {{ color: var(--cyan); }}
                     for bi in range(4):
                         if i < len(band_ranked[bi]):
                             bnick, bcnt = band_ranked[bi][i]
-                            h(f'<td class="byhour-cell">{bnick}<span class="cnt">- {bcnt}</span></td>')
+                            if show_bh_graph:
+                                bar_w = max(1, int(bcnt / band_max[bi] * 100))
+                                bar = (f'<span class="bh-bar {band_colors[bi]}" '
+                                       f'style="width:{bar_w}px;display:inline-block;'
+                                       f'height:15px;vertical-align:middle;margin-right:4px"></span>')
+                            else:
+                                bar = ''
+                            h(f'<td class="byhour-cell">{bar}{bnick}'
+                              f'<span class="cnt"> - {bcnt}</span></td>')
                         else:
                             h('<td></td>')
                     h('</tr>')
@@ -891,17 +803,161 @@ b {{ color: var(--cyan); }}
 
     # ── Latest topics ─────────────────────────────────────────────────────────
     if pisg.get("ShowTopics", True) and recent_topics:
-        section("Latest topics")
-        h('<div>')
+        section("Latest Topics")
+        h('<div class="tscroll"><table class="info-table">')
         for t in recent_topics:
-            h(f'<div class="topic-row">'
-              f'<div class="topic-text">"{t["topic"]}"</div>'
-              f'<div class="topic-meta">set by {t["set_by"]} · {_ago(t["ts"])}</div>'
-              f'</div>')
-        h('</div>')
+            _tdt = datetime.fromtimestamp(t["ts"]) if t["ts"] else None
+            _twhen = (_tdt.strftime("%-d days ago at %H:%M")
+                      if _tdt and (datetime.now() - _tdt).days > 1
+                      else ("today at " + _tdt.strftime("%H:%M") if _tdt
+                            and _tdt.date() == datetime.now().date()
+                            else ("yesterday at " + _tdt.strftime("%H:%M") if _tdt
+                                  else _ago(t["ts"]))))
+            h(f'<tr>'
+              f'<td class="topic-text" style="font-style:italic">{t["topic"]}</td>'
+              f'<td style="font-weight:bold;white-space:nowrap">{_twhen} by {t["set_by"]}</td>'
+              f'</tr>')
+        _tc = len(recent_topics)
+        h(f'<tr><td colspan="2" style="text-align:center;font-size:.78rem;color:var(--muted)">'
+          f'The topic was set {_tc} {"time" if _tc == 1 else "times"}.</td></tr>')
+        h('</table></div>')
 
-    # ── Legend ────────────────────────────────────────────────────────────────
-    if pisg.get("ShowLegend", True):
+    # ── Other numbers ─────────────────────────────────────────────────────────
+    section("Other interesting numbers")
+    h('<table class="bignums">')
+
+    # Got kicked (victim)
+    if pisg.get("ShowBigNumbers", True):
+        kt = get_top(network, channel, "kicks", period, 3)
+        kt = [r for r in kt if r["value"] > 0]
+        if kt:
+            _kv = kt[0]["value"]
+            text = f"<b>{kt[0]['nick']}</b> wasn't very popular, getting kicked {_kv} {'time' if _kv == 1 else 'times'}!"
+            sub  = f"<b>{kt[1]['nick']}</b> seemed to be hated too: {kt[1]['value']} kicks were received." if len(kt) > 1 else None
+            _bignum_row(text, sub)
+
+    # Most kicks given
+    if pisg.get("ShowBigNumbers", True):
+        kg = get_top(network, channel, "kick_given", period, 3)
+        kg = [r for r in kg if r["value"] > 0]
+        if kg:
+            _kg0v = kg[0]["value"]
+            text = f"<b>{kg[0]['nick']}</b> is either insane or just a fair op, kicking a total of {_kg0v} {'person' if _kg0v == 1 else 'people'}!"
+            sub  = f"{kg[0]['nick']}'s faithful follower, <b>{kg[1]['nick']}</b>, kicked about {kg[1]['value']} people." if len(kg) > 1 else None
+            _bignum_row(text, sub)
+
+
+    # Ops given / taken (pisg order: given then taken)
+    show_ops     = pisg.get("ShowOps",     True)
+    show_voice   = pisg.get("ShowVoice",   False)  # pisg default: disabled
+    show_halfops = pisg.get("ShowHalfops", False)  # pisg default: disabled
+
+    def _get_opvoice_top(stat, limit=3):
+        return get_top(network, channel, stat, 0, limit)
+
+    if show_ops:
+        og = [r for r in _get_opvoice_top("op_given", 3) if r["value"] > 0]
+        ot = [r for r in _get_opvoice_top("op_taken", 3) if r["value"] > 0]
+        if og:
+            _ogv = og[0]["value"]
+            text = f"<b>{og[0]['nick']}</b> donated {_ogv} {'op' if _ogv == 1 else 'ops'} in the channel..."
+            sub  = f"<b>{og[1]['nick']}</b> was also generous with ops, giving {og[1]['value']} times." if len(og) > 1 else None
+            hicell(text, sub)
+        else:
+            hicell(f"Strange, no op was given on {channel}!")
+        if ot:
+            _otv = ot[0]["value"]
+            text = f"<b>{ot[0]['nick']}</b> is the channel's deop machine, removing ops from <b>{_otv}</b> {'person' if _otv == 1 else 'people'}."
+            sub  = f"<b>{ot[1]['nick']}</b> also took ops away {ot[1]['value']} times." if len(ot) > 1 else None
+            hicell(text, sub)
+        elif og:
+            hicell(f"Wow, no op was taken on {channel}!")
+
+    if show_halfops:
+        hog = [r for r in _get_opvoice_top("halfop_given", 3) if r["value"] > 0]
+        hot = [r for r in _get_opvoice_top("halfop_taken", 3) if r["value"] > 0]
+        if hog:
+            _hv = hog[0]["value"]
+            text = f"<b>{hog[0]['nick']}</b> donated {_hv} {'halfop' if _hv == 1 else 'halfops'} in the channel..."
+            sub  = f"<b>{hog[1]['nick']}</b> also gave halfops {hog[1]['value']} times." if len(hog) > 1 else None
+            hicell(text, sub)
+        else:
+            hicell(f"Strange, no halfop was given on {channel}!")
+        if hot:
+            _htv = hot[0]["value"]
+            text = f"<b>{hot[0]['nick']}</b> took halfops away {_htv} {'time' if _htv == 1 else 'times'}."
+            hicell(text)
+        elif hog:
+            hicell(f"Wow, no halfop was taken on {channel}!")
+
+    if show_voice:
+        vg = [r for r in _get_opvoice_top("voice_given", 3) if r["value"] > 0]
+        vt = [r for r in _get_opvoice_top("voice_taken", 3) if r["value"] > 0]
+        if vg:
+            _vgv = vg[0]["value"]
+            text = f"<b>{vg[0]['nick']}</b> is very generous with voice, handing it out <b>{_vgv}</b> {'time' if _vgv == 1 else 'times'}."
+            sub  = f"<b>{vg[1]['nick']}</b> was also quite vocal about giving voice, {vg[1]['value']} times." if len(vg) > 1 else None
+            hicell(text, sub)
+        else:
+            hicell(f"Strange, no voices were given on {channel}!")
+        if vt:
+            _vtv = vt[0]["value"]
+            text = f"<b>{vt[0]['nick']}</b> took voice away <b>{_vtv}</b> {'time' if _vtv == 1 else 'times'} — someone had to."
+            sub  = f"<b>{vt[1]['nick']}</b> also silenced people {vt[1]['value']} times." if len(vt) > 1 else None
+            hicell(text, sub)
+        elif vg:
+            hicell(f"No voices were taken on {channel}!")
+
+    # Most actions
+    if pisg.get("ShowBigNumbers", True):
+        ac = get_top(network, channel, "actions", period, 3)
+        ac = [r for r in ac if r["value"] > 0]
+        if ac:
+            _acv = ac[0]["value"]
+            text = f"<b>{ac[0]['nick']}</b> always lets us know what they're doing: {_acv} {'action' if _acv == 1 else 'actions'}!"
+            sub  = f"Also, <b>{ac[1]['nick']}</b> tells us what's up with {ac[1]['value']} actions." if len(ac) > 1 else None
+            ax   = nick_stats.get(ac[0]["nick"], {}).get("action_ex", None)
+            hicell(text, sub, example=ax)
+        else:
+            _bignum_row("No actions in this channel!")
+
+    # Monologues
+    if pisg.get("ShowBigNumbers", True) and qualified:
+        mdata = {n: nick_stats[n].get("monologues",0) for n in qualified if nick_stats[n].get("monologues",0) > 0}
+        if mdata:
+            ranked = sorted(mdata, key=mdata.get, reverse=True)
+            _mc  = mdata[ranked[0]]
+            text = f"<b>{ranked[0]}</b> talks to themselves a lot. They wrote over 5 lines in a row <b>{_mc}</b> {'time' if _mc == 1 else 'times'}!"
+            sub  = f"Another lonely one was <b>{ranked[1]}</b>, who managed to hit {mdata[ranked[1]]} times." if len(ranked) > 1 else None
+            _bignum_row(text, sub)
+
+    # Most joins
+    if pisg.get("ShowBigNumbers", True):
+        jn = get_top(network, channel, "joins", period, 1)
+        jn = [r for r in jn if r["value"] > 0]
+        if jn:
+            _jv = jn[0]["value"]
+            _bignum_row(f"<b>{jn[0]['nick']}</b> couldn't decide whether to stay or go. {_jv} {'join' if _jv == 1 else 'joins'} during this period!")
+
+    # Most foul
+    if pisg.get("ShowBigNumbers", True) and qualified:
+        fdata = {n: nick_stats[n].get("foul", 0) / max(nick_stats[n].get("words", 1), 1)
+                 for n in qualified if nick_stats[n].get("foul", 0) > 0}
+        if fdata:
+            ranked_f = sorted(fdata, key=fdata.get, reverse=True)
+            pct1f = f"{fdata[ranked_f[0]]*100:.1f}"
+            text  = f"<b>{ranked_f[0]}</b> has quite a potty mouth. {pct1f}% of their words were foul language."
+            sub   = f"<b>{ranked_f[1]}</b> also makes sailors blush, {fdata[ranked_f[1]]*100:.1f}% of the time." if len(ranked_f) > 1 else None
+            _fex  = nick_stats.get(ranked_f[0], {}).get("foul_ex", None)
+            ex    = f"&lt;{ranked_f[0]}&gt; {_fex}" if _fex else None
+            hicell(text, sub, example=ex)
+        else:
+            _bignum_row("Nobody is foul-mouthed here! Remarkable.")
+
+    h('</table>')  # close Other interesting numbers 
+
+    # ── Stats summary ──────────────────────────────────────────────────────────
+    if True:
         avg_wpl = f"{total_words/total_lines:.1f}" if total_lines else "0"
         by_str  = f" by {maintainer}" if maintainer else ""
         topic_count = len(recent_topics)
@@ -927,14 +983,15 @@ b {{ color: var(--cyan); }}
 const hdata = {json.dumps(hourly_data)};
 const labels = Array.from({{length:24}}, (_,i) => i.toString().padStart(2,'0')+':00');
 const vals = labels.map((_,i) => hdata[i] || 0);
-const mx = Math.max(...vals, 1);
+// Band colours matching legend: blue=0-5, green=6-11, yellow=12-17, red=18-23
+const bandColor = i => i <= 5 ? '#4a7ab5' : i <= 11 ? '#4a9b5e' : i <= 17 ? '#b5963a' : '#b54a4a';
 new Chart(document.getElementById('hourChart'), {{
   type: 'bar',
   data: {{
     labels,
     datasets: [{{
       data: vals,
-      backgroundColor: vals.map(v => `rgba(122,162,247,${{(0.3+v/mx*0.7).toFixed(2)}})` ),
+      backgroundColor: vals.map((_,i) => bandColor(i)),
       borderRadius: 3,
     }}]
   }},
