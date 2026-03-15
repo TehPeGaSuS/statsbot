@@ -786,21 +786,6 @@ b {{ color: var(--cyan); }}
               f'<td class="small">{_ago(u["ts"])}</td></tr>')
         h('</tbody></table></div>')
 
-    # ── Recent kicks (pisg-style prose) ──────────────────────────────────────
-    if recent_kicks:
-        h('<table class="bignums">')
-        for k in recent_kicks:
-            victim  = k["victim"]
-            kicker  = k["kicker"]
-            reason  = (k["reason"] or "").strip()
-            when    = _ago(k["ts"])
-            text    = f"<b>{victim}</b> wasn't very popular, getting kicked by <b>{kicker}</b> {when}!"
-            example = f"*** {victim} was kicked by {kicker}"
-            if reason:
-                example += f" ({reason})"
-            hicell(text, example=example)
-        h('</table>')
-
     # ── Latest topics ─────────────────────────────────────────────────────────
     if pisg.get("ShowTopics", True) and recent_topics:
         section("Latest Topics")
@@ -826,7 +811,7 @@ b {{ color: var(--cyan); }}
     section("Other interesting numbers")
     h('<table class="bignums">')
 
-    # Got kicked (victim)
+    # Got kicked (victim) — with example from most recent kick
     if pisg.get("ShowBigNumbers", True):
         kt = get_top(network, channel, "kicks", period, 3)
         kt = [r for r in kt if r["value"] > 0]
@@ -834,7 +819,17 @@ b {{ color: var(--cyan); }}
             _kv = kt[0]["value"]
             text = f"<b>{kt[0]['nick']}</b> wasn't very popular, getting kicked {_kv} {'time' if _kv == 1 else 'times'}!"
             sub  = f"<b>{kt[1]['nick']}</b> seemed to be hated too: {kt[1]['value']} kicks were received." if len(kt) > 1 else None
-            _bignum_row(text, sub)
+            # Find the most recent kick for this nick for the example line
+            _kick_ex = next((k for k in recent_kicks if k["victim"].lower() == kt[0]["nick"].lower()), None)
+            if not _kick_ex and recent_kicks:
+                _kick_ex = recent_kicks[0]
+            if _kick_ex:
+                _ex_str = f"*** {_kick_ex['victim']} was kicked by {_kick_ex['kicker']}"
+                if (_kick_ex["reason"] or "").strip():
+                    _ex_str += f" ({_kick_ex['reason'].strip()})"
+                hicell(text, sub, example=_ex_str)
+            else:
+                _bignum_row(text, sub)
 
     # Most kicks given
     if pisg.get("ShowBigNumbers", True):
