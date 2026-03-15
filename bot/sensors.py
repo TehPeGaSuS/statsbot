@@ -258,24 +258,28 @@ class Sensors:
 
     # ─── JOIN ────────────────────────────────────────────────────────────────
 
-    def on_join(self, nick: str, host: str, channel: str, is_bot: bool = False):
+    def on_join(self, nick: str, host: str, channel: str,
+                is_bot: bool = False, populate: bool = False):
         # Invalidate nick cache so the new joiner is picked up immediately
         self._nick_cache.pop((self.network, channel), None)
 
         # Create entry for ALL joining nicks so minutes tracking is accurate.
         # Silent nicks (0 words/lines) are filtered from display by get_top.
         if is_ignored(nick, self.network, host, channel):
-            add_chanlog(self.network, channel, nick, None, type_=6)
+            if not populate:
+                add_chanlog(self.network, channel, nick, None, type_=6)
             return
         nick_id = get_or_create_nick(nick, self.network, channel, host)
-        incr(nick_id, "joins", 1)
+        if not populate:
+            incr(nick_id, "joins", 1)
         # Store +B flag so dashboard can show it
         if is_bot:
             from database.models import get_conn
             with get_conn() as conn:
                 conn.execute("UPDATE nicks SET is_bot=1 WHERE id=?", (nick_id,))
-        add_chanlog(self.network, channel, nick, None, type_=6)
-        log.debug(f"JOIN {nick} -> {channel} (bot={is_bot})")
+        if not populate:
+            add_chanlog(self.network, channel, nick, None, type_=6)
+        log.debug(f"JOIN {nick} -> {channel} (bot={is_bot}, populate={populate})")
 
     # ─── PART ────────────────────────────────────────────────────────────────
 

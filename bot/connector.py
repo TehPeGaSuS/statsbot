@@ -268,9 +268,9 @@ class IRCConnector:
                             f"!ignore add {who_nick}!{full_host}"
                         )
                         if who_channel:
-                            self.sensors.on_join(who_nick, full_host, who_channel, is_bot=True)
+                            self.sensors.on_join(who_nick, full_host, who_channel, is_bot=True, populate=True)
                 elif who_channel:
-                    self.sensors.on_join(who_nick, full_host, who_channel, is_bot=False)
+                    self.sensors.on_join(who_nick, full_host, who_channel, is_bot=False, populate=True)
                     # Try auto-auth via host masks
                     if self.pm_handler and hasattr(self.pm_handler, 'auth'):
                         self.pm_handler.auth.try_auto_auth(self.network, who_nick, full_host)

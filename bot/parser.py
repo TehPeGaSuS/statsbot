@@ -29,20 +29,36 @@ def count_letters(text: str) -> int:
     return len(text.replace(' ', ''))
 
 
-def count_smileys(text: str, smiley_list: List[str]) -> int:
-    """Count occurrences of any smiley from the config list."""
+def _count_token(text: str, token: str) -> int:
+    """Count token occurrences that are at word boundaries.
+    Prevents e.g. :/ in https:// being counted as a smiley.
+    A match is valid when preceded by whitespace/start and followed
+    by whitespace, punctuation, or end of string.
+    """
+    TRAILING_OK = set(' \t\n.,!?;:\'")>]')
     count = 0
-    for s in smiley_list:
-        count += text.count(s)
+    start = 0
+    while True:
+        idx = text.find(token, start)
+        if idx == -1:
+            break
+        before = (idx == 0 or text[idx - 1].isspace())
+        end = idx + len(token)
+        after  = (end >= len(text) or text[end] in TRAILING_OK)
+        if before and after:
+            count += 1
+        start = idx + 1
     return count
+
+
+def count_smileys(text: str, smiley_list: List[str]) -> int:
+    """Count smileys, requiring word boundaries to avoid false positives."""
+    return sum(_count_token(text, s) for s in smiley_list)
 
 
 def count_sad(text: str, sad_list: List[str]) -> int:
-    """Count occurrences of any sad smiley from the config list."""
-    count = 0
-    for s in sad_list:
-        count += text.count(s)
-    return count
+    """Count sad smileys, requiring word boundaries."""
+    return sum(_count_token(text, s) for s in sad_list)
 
 
 def count_questions(text: str) -> int:
@@ -115,7 +131,7 @@ def count_specific_smileys(text: str, smiley_list: List[str]) -> dict:
     """Return dict of {smiley: count} for each smiley found."""
     result = {}
     for s in smiley_list:
-        c = text.count(s)
+        c = _count_token(text, s)
         if c:
             result[s] = c
     return result
