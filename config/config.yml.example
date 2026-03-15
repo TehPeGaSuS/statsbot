@@ -59,9 +59,7 @@ stats:
   auto_ignore_bots: false   # auto-ignore nicks with IRC +B umode — unreliable, opt-in only
   expire_days: 30           # remove nicks unseen for X days (0 = never)
   log_wordstats: true       # track word frequency per nick
-  min_word_length: 3        # minimum word length to count
   quote_frequency: 5        # log every Nth message as a random quote
-  display_urls: 5           # how many recent URLs to show on stats page
   display_kicks: 5          # how many recent kicks to show
   kick_context: 5           # lines of context to save with each kick
 
@@ -134,7 +132,7 @@ pisg:
   TopicHistory: 5              # max topics shown (pisg: TopicHistory)
   UrlHistory: 10               # max URLs shown (pisg: UrlHistory)
   WordHistory: 10              # max words in most used words (pisg: WordHistory)
-  WordLength: 5                # min word length to appear (pisg: WordLength)
+  WordLength: 4                # min word length to store and display (pisg: WordLength; also gates URL logging when 0)
   IgnoreWords: []              # words to exclude from word stats (pisg: IgnoreWords)
   NickHistory: 5               # max nicks in most referenced nicks (pisg: NickHistory)
   SmileyHistory: 10            # max smileys in smiley table (pisg: SmileyHistory)

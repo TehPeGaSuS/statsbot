@@ -32,7 +32,7 @@ class Sensors:
         self.cfg = config
         self.smileys = config.get("stats", {}).get("happy_smileys", [])
         self.sad_smileys = config.get("stats", {}).get("sad_smileys", [])
-        self.min_word = config.get("stats", {}).get("min_word_length", 3)
+        self.min_word = config.get("pisg", {}).get("WordLength", 4)
         pisg = config.get("pisg", {})
         self.violent_words = pisg.get("ViolentWords", [])
         self.foul_words    = pisg.get("FoulWords", [])
@@ -44,7 +44,7 @@ class Sensors:
         self.log_wordstats = config.get("stats", {}).get("log_wordstats", True)
         self.quote_freq = config.get("stats", {}).get("quote_frequency", 5)
         self.kick_context = config.get("stats", {}).get("kick_context", 5)
-        self.log_urls = config.get("stats", {}).get("display_urls", 5) > 0
+        self.log_urls = config.get("pisg", {}).get("UrlHistory", 10) > 0
         self._quote_counters = {}   # (network, chan) -> int
         self._minute_tracker = {}   # (network, chan) -> set of nick_ids active this minute
         self.cmd_prefix = config.get("commands", {}).get("prefix", "!")
