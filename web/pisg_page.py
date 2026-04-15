@@ -188,7 +188,7 @@ def build_page(network: str, channel: str, period: int, config: dict) -> str:
     def section(title_str):
         h(f'<h2 class="section-title">{title_str}</h2>')
     def hicell(content, small=None, example=None):
-        ex_html = f'<br><span class="small"><b>For example, like this:</b><br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{example}</span>' if example else ""
+        ex_html = f'<br><span class="small"><b>{t("for_example", lang)}</b><br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{example}</span>' if example else ""
         extra = f'<br><span class="small">{small}</span>' if small else ""
         h(f'<tr><td class="hicell">{content}{extra}{ex_html}</td></tr>')
     # ── Page header ───────────────────────────────────────────────────────────

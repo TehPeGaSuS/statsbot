@@ -203,6 +203,9 @@ msgstr "Povero {nick}, a nessuno piace. È stato attaccato {count} volte."
 msgid "bignums_attacked_sub"
 msgstr "Anche {nick} sembra non essere amato. È stato battuto {count} volte."
 
+msgid "for_example"
+msgstr "Per esempio, così:"
+
 msgid "bignums_happy"
 msgstr "{nick} porta gioia al mondo. Il {pct}% delle sue righe conteneva faccine sorridenti. :)"
 
