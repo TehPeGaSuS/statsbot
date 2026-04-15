@@ -361,7 +361,7 @@ body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', Tahom
   <p style="color:var(--muted);text-align:center;padding:3rem 0">No channels tracked on this network yet.</p>
   {% endif %}
 </div>
-<div class="footer"><a href="{{ project_url }}" style="color:var(--faint)">Statsbot</a> &mdash; inspired by stats.mod by G'Quann / Florian Sander</div>
+<div class="footer"><a href="{{ project_url }}" style="color:var(--faint)">Statsbot</a> &mdash; Inspired by <a href="https://pisg.github.io/" style="color:var(--faint)">PISG</a> by Morten Brix Pedersen and others</div>
 <button class="theme-toggle" id="themeToggle" title="Toggle light/dark"></button>
 
 <script>
@@ -578,7 +578,7 @@ body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', Tahom
 
 </div>
 
-<div class="footer"><a href="{{ project_url }}" style="color:var(--faint)">Statsbot</a> &mdash; inspired by stats.mod by G'Quann / Florian Sander</div>
+<div class="footer"><a href="{{ project_url }}" style="color:var(--faint)">Statsbot</a> &mdash; Inspired by <a href="https://pisg.github.io/" style="color:var(--faint)">PISG</a> by Morten Brix Pedersen and others</div>
 <button class="theme-toggle" id="themeToggle" title="Toggle light/dark"></button>
 
 <script>
@@ -917,7 +917,7 @@ body { background: var(--bg); color: var(--text);
 </div><!-- /container -->
 
 <div class="footer">
-  <a href="{{ project_url }}" style="color:var(--muted)">Statsbot</a> — inspired by stats.mod by G'Quann / Florian Sander &nbsp;·&nbsp; {{ now }}
+  <a href="{{ project_url }}" style="color:var(--muted)">Statsbot</a> — Inspired by <a href="https://pisg.github.io/" style="color:var(--faint)">PISG</a> by Morten Brix Pedersen and others &nbsp;·&nbsp; {{ now }}
 </div>
 
 <script>

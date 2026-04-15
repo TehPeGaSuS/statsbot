@@ -989,13 +989,11 @@ b {{ color: var(--cyan); }}
   <b>{t("legend_avg_wpl", lang)}:</b> {avg_wpl} &nbsp;·&nbsp;
   <b>{t("legend_avg_cpl", lang)}:</b> {avg_cpl}<br>
   <b>{t("legend_topics_set", lang)}:</b> {topic_count} {t("legend_topics_set_n", lang, n="")}<br>
-  <br>Stats for <b>{channel}</b> on <b>{network}</b>{by_str} &mdash;
-  generated {now_str} by <a href="{project_url}" style="color:var(--blue)">Statsbot</a>
-  inspired by <a href="http://pisg.sourceforge.net/" style="color:var(--blue)">pisg</a>
+  <br>Stats for <b>{channel}</b> on <b>{network}</b>{by_str}
 </div>''')
 
     # ── Footer ────────────────────────────────────────────────────────────────
-    h(f'<div class="footer"><a href="{project_url}" style="color:var(--muted)">Statsbot</a> — inspired by pisg by Morten Brix Pedersen and others</div>')
+    h(f'<div class="footer"><a href="{project_url}" style="color:var(--muted)">Statsbot</a> — Inspired by <a href="https://pisg.github.io/" style="color:var(--muted)">PISG</a> by Morten Brix Pedersen and others</div>')
     h('<button class="theme-toggle" id="themeToggle" title="Toggle light/dark"></button>')
     h('</div>') # /container
 
