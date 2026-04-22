@@ -405,7 +405,7 @@ msgid "cmd_stats_no_stats"
 msgstr "Ainda não há estatísticas."
 
 msgid "cmd_top_result"
-msgstr "{channel} top {n}: {list}"
+msgstr "Top faladores de {channel}: {list}"
 
 msgid "cmd_quote_none_for_nick"
 msgstr "Sem citações de {nick}."
@@ -416,3 +416,5 @@ msgstr "Ainda não há citações."
 msgid "cmd_quote_result"
 msgstr "Citação aleatória de {nick}: \"{quote}\""
 
+msgid "list_and"
+msgstr "e"

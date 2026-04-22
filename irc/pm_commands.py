@@ -23,6 +23,8 @@ Commands:
 
 import logging
 import time
+import urllib.request
+import urllib.parse
 
 log = logging.getLogger("pm_commands")
 
@@ -529,24 +531,68 @@ class PMCommandHandler:
 
     # ─── Help ─────────────────────────────────────────────────────────────────
 
+    @staticmethod
+    def _paste(text: str, timeout: int = 6) -> str | None:
+        """Upload text to dpaste.org and return the URL, or None on failure."""
+        try:
+            data = urllib.parse.urlencode({
+                "content": text,
+                "syntax": "text",
+                "expiry_days": 7,
+            }).encode()
+            req = urllib.request.Request(
+                "https://dpaste.org/api/",
+                data=data,
+                headers={"User-Agent": "Statsbot/2.0"},
+            )
+            with urllib.request.urlopen(req, timeout=timeout) as resp:
+                url = resp.read().decode().strip().strip('"')
+                return url if url.startswith("http") else None
+        except Exception as exc:
+            log.warning("help paste failed: %s", exc)
+            return None
+
     def _cmd_help(self, nick: str):
         lines = [
-            "ircstats PM commands:",
-            "  identify <master_nick> <password>  — authenticate",
-            "  logout  |  whoami  |  status",
-            "  ignore add [#chan] <pattern> [--purge]  (--purge also deletes existing stats)",
-            "  ignore purge [#chan] <pattern>           (delete stats without changing ignore list)",
-            "  ignore del [#chan] <pattern>",
-            "  ignore list [#chan]",
-            "  master add <nick>  |  master del <nick>  |  master list",
-            "  set page [#chan] <url>",
-            "  nets                                       — list all networks",
-            "  setlang [-network <net>] #channel <lang>     — set channel language (en_US/pt_PT/fr_FR/it_IT)",
-            "  chans                                      — list channels on this network",
-            "  addchan [-network <net>] #channel          — join and track a channel",
-            "  delchan [-network <net>] #channel          — part and delete channel stats",
-            "  addnet -name <n> -host <host> -port <port> [-ssl|-plaintext]  (TLS by default)",
-            "  delnet -name <n>                           — remove network and all stats",
+            "ircstats PM command reference",
+            "=" * 36,
+            "",
+            "Auth:",
+            "  identify <master_nick> <password>     — authenticate",
+            "  logout                                — end your session",
+            "  whoami                                — show current identity",
+            "  status                                — connected channels and user counts",
+            "",
+            "Ignore management (requires auth):",
+            "  ignore add [#chan] <pattern>           — add ignore (network-wide if no #chan)",
+            "  ignore add [#chan] <pattern> --purge   — add ignore AND delete existing stats",
+            "  ignore del [#chan] <pattern>           — remove ignore",
+            "  ignore list [#chan]                    — list ignores",
+            "  ignore purge [#chan] <pattern>         — delete stats only (ignore list unchanged)",
+            "",
+            "Master management (requires auth):",
+            "  master add <nick>                      — add master (bot asks for password)",
+            "  master del <nick>                      — remove master",
+            "  master list                            — list all masters",
+            "",
+            "Configuration (requires auth):",
+            "  set page [#chan] <url>                 — override the URL returned by !stats",
+            "  setlang [-network <net>] #chan <lang>  — set channel language",
+            "    Supported: en_US  pt_PT  fr_FR  it_IT",
+            "",
+            "Network & channel management (requires auth):",
+            "  nets                                   — list all networks",
+            "  chans                                  — list channels on this network",
+            "  addnet -name <n> -host <h> -port <p> [-ssl|-plaintext]  (TLS is default)",
+            "  delnet -name <n>                       — remove network + ALL its stats (no undo)",
+            "  addchan [-network <net>] #channel      — join and start tracking",
+            "  delchan [-network <net>] #channel      — part and delete ALL channel stats (no undo)",
         ]
-        for line in lines:
-            self.send(nick, line)
+        text = "\n".join(lines)
+        url = self._paste(text)
+        if url:
+            self.send(nick, f"Command reference: {url}")
+        else:
+            # Pastebin unavailable — fall back to inline
+            for line in lines:
+                self.send(nick, line)

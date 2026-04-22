@@ -419,7 +419,7 @@ msgid "cmd_stats_no_stats"
 msgstr "No stats yet."
 
 msgid "cmd_top_result"
-msgstr "{channel} top {n}: {list}"
+msgstr "Top talkers for {channel}: {list}"
 
 msgid "cmd_quote_none_for_nick"
 msgstr "No quotes for {nick}."
@@ -430,3 +430,5 @@ msgstr "No quotes yet."
 msgid "cmd_quote_result"
 msgstr "{nick}'s random quote: \"{quote}\""
 
+msgid "list_and"
+msgstr "and"

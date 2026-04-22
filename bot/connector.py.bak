@@ -197,11 +197,12 @@ class IRCConnector:
             # NickServ auth (if not using SASL)
             if not self._sasl_authed:
                 self._do_nickserv_auth()
-            # _auth_done is True when no auth is needed (set by _do_nickserv_auth).
-            # When auth IS pending, _on_auth_complete() is called by
-            # _handle_nickserv_notice once the server confirms identity.
-            if self._auth_done:
-                self._on_auth_complete()
+            # Join channels (after a brief delay to let auth settle)
+            for chan in self.channels:
+                self.send_raw(f"JOIN {chan}")
+            # on_connect commands (if no auth pending)
+            if self._auth_done or (not self.net.get("sasl") and not self.net.get("nickserv_password")):
+                self._run_on_connect()
 
         elif command == "433":  # ERR_NICKNAMEINUSE
             if not self._ghost_sent and self.net.get("ghost") and (
@@ -398,48 +399,33 @@ class IRCConnector:
         return {c: list(m) for c, m in self._channel_members.items()}
 
     def _do_nickserv_auth(self):
-        """Send NickServ IDENTIFY if configured, then fire _on_auth_complete.
-
-        We send IDENTIFY and immediately proceed — channels join and on_connect
-        commands fire straight away. _handle_nickserv_notice handles ghost
-        separately (it doesn't depend on the join/on_connect sequencing).
-        Networks that require identification before joining (rare) should add
-        a short JOIN delay via on_connect or switch to SASL.
-        """
+        """Send NickServ IDENTIFY if configured."""
         ns_pass = self.net.get("nickserv_password")
         if not ns_pass:
             self._auth_done = True
             return
         self.send_raw(f"PRIVMSG NickServ :IDENTIFY {self.nick} {ns_pass}")
         log.info("Sent NickServ IDENTIFY.")
-        # Mark auth done optimistically — NickServ confirm may or may not arrive.
-        # Ghost handling still happens in _handle_nickserv_notice when we get the
-        # NickServ reply, independently of joins / on_connect.
-        self._auth_done = True
+        # Mark done — some networks confirm, some don't. We run on_connect
+        # after a notice or after a short window via _handle_nickserv_notice.
 
     def _handle_nickserv_notice(self, text: str):
         """React to NickServ/services messages."""
         tl = text.lower()
         # Ghost succeeded — reclaim primary nick
-        if self._reclaim_nick and any(w in tl for w in (
-                "ghost", "killed", "disconnected", "is not online",
-                "has been ghosted", "has been killed")):
+        if self._reclaim_nick and any(w in tl for w in ("ghost", "killed", "disconnected", "is not online")):
             log.info(f"Ghost confirmed. Reclaiming nick {self.nick}.")
             self.send_raw(f"NICK {self.nick}")
             self._reclaim_nick = False
             self._current_nick = self.nick
 
-    def _on_auth_complete(self):
-        """Called once auth is done (or confirmed not needed).
-        Joins all configured channels then fires on_connect commands.
-        Safe to call multiple times — guards against double-execution.
-        """
-        if getattr(self, "_joined", False):
-            return
-        self._joined = True
-        for chan in self.channels:
-            self.send_raw(f"JOIN {chan}")
-        self._run_on_connect()
+        # Auth success signals
+        if any(w in tl for w in ("you are now identified", "you are already identified",
+                                  "password accepted", "now recognized", "logged in")):
+            if not self._auth_done:
+                log.info("NickServ: authentication confirmed.")
+                self._auth_done = True
+                self._run_on_connect()
 
     def _run_on_connect(self):
         """Send configured on_connect commands."""

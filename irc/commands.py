@@ -13,6 +13,10 @@ from i18n import t, get_lang
 
 log = logging.getLogger("commands")
 
+# Per-user rate limit for !top: max 2 uses per 5 minutes per nick+channel.
+_TOP_LIMIT   = 2
+_TOP_WINDOW  = 300   # seconds
+
 
 class CommandHandler:
     def __init__(self, config: dict, network: str, send_fn, auth_manager=None):
@@ -24,18 +28,30 @@ class CommandHandler:
         # Find this network's entry in config to check for a local override.
         _global_cmd = config.get("commands", {})
         _net_cfg = next((n for n in config.get("networks", []) if n.get("name") == network), {})
-        self.prefix   = _net_cfg.get("cmd_prefix") or _global_cmd.get("prefix", "!")
-        self.max_cmds  = _global_cmd.get("max_cmds", 5)
+        self.prefix     = _net_cfg.get("cmd_prefix") or _global_cmd.get("prefix", "!")
+        self.max_cmds   = _global_cmd.get("max_cmds", 5)
         self.max_window = _global_cmd.get("max_cmds_window", 60)
-        self._flood_buckets: dict = {}
+        self._flood_buckets: dict = {}     # channel -> [timestamps]  (channel flood)
+        self._top_buckets: dict   = {}     # (nick, channel) -> [timestamps]  (per-user top)
 
     def _flood_check(self, channel: str) -> bool:
         now = time.time()
-        bucket = [t for t in self._flood_buckets.get(channel, []) if now - t < self.max_window]
+        bucket = [ts for ts in self._flood_buckets.get(channel, []) if now - ts < self.max_window]
         if len(bucket) >= self.max_cmds:
             return True
         bucket.append(now)
         self._flood_buckets[channel] = bucket
+        return False
+
+    def _top_rate_check(self, nick: str, channel: str) -> bool:
+        """Return True (blocked) if this nick has used !top too recently."""
+        now = time.time()
+        key = (nick.lower(), channel.lower())
+        bucket = [ts for ts in self._top_buckets.get(key, []) if now - ts < _TOP_WINDOW]
+        if len(bucket) >= _TOP_LIMIT:
+            return True
+        bucket.append(now)
+        self._top_buckets[key] = bucket
         return False
 
     def dispatch(self, nick: str, channel: str, text: str, host: str = ""):
@@ -52,7 +68,7 @@ class CommandHandler:
 
         handlers = {
             "stats":  lambda: self._cmd_stats(channel),
-            "top":    lambda: self._cmd_top(channel, args),
+            "top":    lambda: self._cmd_top(nick, channel),
             "quote":  lambda: self._cmd_quote(channel, args),
         }
 
@@ -80,21 +96,23 @@ class CommandHandler:
         lang = get_lang(self.network, channel)
         self.send(channel, t("cmd_stats_url", lang, channel=channel, url=url))
 
-    def _cmd_top(self, channel: str, args: str):
-        try:
-            n = max(1, min(int(args.strip()), 10)) if args.strip().isdigit() else 3
-        except ValueError:
-            n = 3
+    def _cmd_top(self, nick: str, channel: str):
+        lang = get_lang(self.network, channel)
+        if self._top_rate_check(nick, channel):
+            log.debug(f"!top rate-limited for {nick} in {channel}")
+            return
         from database.models import get_top
-        rows = [r for r in get_top(self.network, channel, "words", 0, n) if r["value"] > 0]
+        rows = [r for r in get_top(self.network, channel, "words", 0, 3) if r["value"] > 0]
         if not rows:
-            lang = get_lang(self.network, channel)
             self.send(channel, t("cmd_stats_no_stats", lang))
             return
-        parts = [f"#{i+1} {r['nick']}: {r['value']}" for i, r in enumerate(rows)]
-        lang = get_lang(self.network, channel)
-        self.send(channel, t("cmd_top_result", lang, channel=channel,
-                             n=len(rows), list=", ".join(parts)))
+        parts = [f"#{i+1} {r['nick']} ({r['value']} words)" for i, r in enumerate(rows)]
+        if len(parts) >= 2:
+            and_word = t("list_and", lang)
+            list_str = ", ".join(parts[:-1]) + f" {and_word} " + parts[-1]
+        else:
+            list_str = parts[0]
+        self.send(channel, t("cmd_top_result", lang, channel=channel, list=list_str))
 
     def _cmd_quote(self, channel: str, args: str):
         target = args.strip() or None
