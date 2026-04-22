@@ -13,6 +13,8 @@ from typing import Callable, Optional, List
 
 log = logging.getLogger("connector")
 
+VERSION = "Statsbot/2.0 (github.com/TehPeGaSuS/Statsbot)"
+
 # IRC message parser
 MSG_RE = re.compile(
     r'^(?::(?P<prefix>[^\s]+)\s+)?'
@@ -375,6 +377,22 @@ class IRCConnector:
             host = self._nick_hosts.get(nick.lower(), host)
             target = params[0] if params else ""
             text = params[1] if len(params) > 1 else ""
+
+            # CTCP — must be checked before pm_handler / sensors routing.
+            # Requests arrive as PRIVMSG target :\x01COMMAND [args]\x01
+            if text.startswith("\x01") and text.endswith("\x01"):
+                ctcp_body = text[1:-1]
+                ctcp_cmd  = ctcp_body.split(" ", 1)[0].upper()
+                if ctcp_cmd == "VERSION":
+                    self.send_raw(f"NOTICE {nick} :\x01VERSION {VERSION}\x01")
+                    log.debug(f"CTCP VERSION reply sent to {nick}")
+                elif ctcp_cmd == "PING":
+                    # Echo the ping token back so lag checks work
+                    ping_arg = ctcp_body[5:] if len(ctcp_body) > 5 else ""
+                    self.send_raw(f"NOTICE {nick} :\x01PING{ping_arg}\x01")
+                    log.debug(f"CTCP PING reply sent to {nick}")
+                # All other CTCP types (TIME, FINGER, etc.) are silently ignored
+                return
 
             # PM to the bot — route to PM command handler
             if target.lower() == self._current_nick.lower():
