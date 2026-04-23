@@ -265,10 +265,14 @@ networks:
 | Command | Description |
 |---------|-------------|
 | `!stats` | Link to stats page for this channel |
-| `!top [n]` | Top N users by words, single line (default 3, max 10) |
+| `!top` | Top 3 users by words — e.g. `Top talkers for #channel: #1 Alice (1234 words), #2 Bob (987 words) and #3 Carol (456 words)` |
 | `!quote [nick]` | Random quote, optionally from a specific nick |
 
+`!top` is rate-limited to 2 uses per user per 5 minutes.
+
 ### PM commands (`/msg statsbot <command>`)
+
+Send `help` to receive a full command reference posted to a pastebin link.
 
 **Authentication:**
 
@@ -279,13 +283,30 @@ networks:
 | `whoami` | Show your current identity |
 | `status` | Show connected channels and user counts |
 
+**Network management:**
+
+> `config.yml` is the source of truth for networks. Add or remove networks
+> there and run `rehash` to apply changes live. Networks removed from config
+> are **disabled** (stats preserved). Use `delnet` only to permanently purge
+> stats for a network already removed from config.
+
+| Command | Description |
+|---------|-------------|
+| `rehash` | Reload `config.yml`: connect new networks, disconnect removed ones |
+| `nets` | List all networks in the database with host, port, SSL status |
+| `chans` | List channels tracked on the current network |
+| `delnet -name <n>` | Permanently delete **all** stats for a network (no undo) |
+| `addchan [-network <net>] #channel` | Join and start tracking a channel. `-network` is optional if you're already on that network. |
+| `delchan [-network <net>] #channel` | Part a channel and permanently delete **all** its stats |
+
 **Ignore management** (requires auth):
 
 | Command | Description |
 |---------|-------------|
-| `ignore add [#channel] <pattern>` | Add ignore. Omit `#channel` for network-wide. |
+| `ignore add [#channel] <pattern> [--purge]` | Add ignore. Omit `#channel` for network-wide. `--purge` also deletes existing stats for matching nicks. |
 | `ignore del [#channel] <pattern>` | Remove ignore |
 | `ignore list [#channel]` | List ignores, optionally filtered by channel |
+| `ignore purge [#channel] <pattern>` | Delete stats for matching nicks without touching the ignore list |
 
 **Master management** (requires auth):
 
@@ -300,17 +321,7 @@ networks:
 | Command | Description |
 |---------|-------------|
 | `set page [#channel] <url>` | Override the stats URL returned by `!stats` |
-
-**Network management** (requires auth):
-
-| Command | Description |
-|---------|-------------|
-| `nets` | List all networks in the database with host, port, SSL status |
-| `chans` | List channels tracked on the current network |
-| `addnet -name <n> -host <host> -port <port> [-ssl\|-plaintext]` | Add a new network and connect immediately. TLS is the default — pass `-plaintext` to disable. |
-| `delnet -name <n>` | Disconnect a network and permanently delete **all** its stats |
-| `addchan [-network <net>] #channel` | Join and start tracking a channel. `-network` is optional if you're already on that network. |
-| `delchan [-network <net>] #channel` | Part a channel and permanently delete **all** its stats |
+| `setlang [-network <net>] #channel <lang>` | Set per-channel language. Supported: `en_US` `pt_PT` `fr_FR` `it_IT` |
 
 > **Destructive operations:** `delnet` and `delchan` cascade-delete all stats,
 > quotes, URLs, topics, kick logs, karma, and hourly data for that
@@ -318,16 +329,22 @@ networks:
 
 **Examples:**
 ```
-addnet -name SwiftIRC -host irc.swiftirc.net -port 6697
-addnet -name Rizon -host irc.rizon.net -port 6667 -plaintext
+# Add a network — edit config.yml, then:
+rehash
+
+# Remove a network — remove it from config.yml, then:
+rehash
+# To also purge its stats:
 delnet -name SwiftIRC
 
 addchan #general                        (on current network)
 addchan -network SwiftIRC #general      (on a different network)
 delchan #general
 delchan -network SwiftIRC #general
-```
 
+setlang #lobby pt_PT
+setlang -network ptirc #help fr_FR
+```
 ---
 
 ## pisg-style page options

@@ -31,11 +31,12 @@ log = logging.getLogger("pm_commands")
 
 class PMCommandHandler:
     def __init__(self, network: str, auth_manager, send_fn, config: dict,
-                  connectors: list = None):
+                  connectors: list = None, config_path: str = None):
         self.network = network
         self.auth = auth_manager
         self.send = send_fn          # send(nick, text) — sends a NOTICE or PRIVMSG to nick
         self.cfg = config
+        self.config_path = config_path   # path to config.yml, used by rehash
         self.connectors = connectors or []
         # Pending master add flows: {nick_lower: {"step": 1, "target": master_nick}}
         self._pending_master_add: dict = {}
@@ -345,6 +346,83 @@ class PMCommandHandler:
         """Alias for reload."""
         self._cmd_reload(nick)
 
+    def _cmd_reload(self, nick: str):
+        """Reload config.yml: upsert networks, connect new ones, disconnect removed ones."""
+        if not self._require_auth(nick): return
+
+        path = self.config_path
+        if not path:
+            self.send(nick, "Config path not set — cannot rehash.")
+            return
+
+        import yaml
+        try:
+            with open(path) as f:
+                new_cfg = yaml.safe_load(f)
+        except Exception as e:
+            self.send(nick, f"Failed to read config: {e}")
+            return
+
+        from database.models import seed_from_config, get_enabled_networks
+        from bot.connector import IRCConnector
+
+        # Remember which networks were active before the reload
+        old_names = {c.network for c in self.connectors}
+
+        # Sync DB with new config (upserts + disables removed networks)
+        seed_from_config(new_cfg)
+
+        # Work out what changed
+        new_names = {n["name"] for n in new_cfg.get("networks", [])}
+        to_connect = new_names - old_names
+        to_disconnect = old_names - new_names
+
+        # Update the live config dict in-place so all handlers see the new values
+        self.cfg.clear()
+        self.cfg.update(new_cfg)
+
+        added, removed = [], []
+
+        # Connect new networks
+        for net in new_cfg.get("networks", []):
+            if net["name"] not in to_connect:
+                continue
+            import json as _json
+            bot = new_cfg.get("bot", {})
+            net_cfg = {
+                "name":     net["name"],
+                "host":     net["host"],
+                "port":     net.get("port", 6667),
+                "ssl":      net.get("ssl", False),
+                "nick":     net.get("nick")     or bot.get("nick",     "statsbot"),
+                "altnick":  net.get("altnick")  or bot.get("altnick",  "statsbot_"),
+                "ident":    net.get("ident")     or bot.get("ident",    "statsbot"),
+                "realname": net.get("realname") or bot.get("realname", "IRC Stats Bot"),
+                "channels": net.get("channels", []),
+                "cmd_prefix": net.get("cmd_prefix", new_cfg.get("commands", {}).get("prefix", "!")),
+                "nickserv_password": net.get("nickserv_password"),
+                "server_password":   net.get("server_password"),
+                "ghost":      net.get("ghost", False),
+                "on_connect": net.get("on_connect", []),
+                "sasl":       net.get("sasl"),
+            }
+            self._post_event({"action": "add_network", "net_cfg": net_cfg})
+            added.append(net["name"])
+
+        # Disconnect removed networks
+        for name in to_disconnect:
+            self._post_event({"action": "remove_network", "name": name})
+            removed.append(name)
+
+        parts = []
+        if added:
+            parts.append(f"connecting: {', '.join(added)}")
+        if removed:
+            parts.append(f"disconnecting: {', '.join(removed)}")
+        if not parts:
+            parts.append("no network changes")
+        self.send(nick, f"Rehash done — {'; '.join(parts)}.")
+
     # ─── Network / Channel management ────────────────────────────────────────
 
     def _require_auth(self, nick: str) -> bool:
@@ -423,47 +501,10 @@ class PMCommandHandler:
         self.send(nick, f"Parted {chan} on {network} and deleted all its stats.")
 
     def _cmd_addnet(self, nick: str, args: str):
-        """addnet -name <n> -host <host> -port <port> [-ssl|-plaintext]
-        -ssl is the default. Use -plaintext to disable TLS."""
+        """addnet is no longer used — networks are managed via config.yml + rehash."""
         if not self._require_auth(nick): return
-        parsed = self._parse_flags(args)
-        flags  = parsed["flags"]
-        name     = flags.get("name", "")
-        host     = flags.get("host", "")
-        port_val = str(flags.get("port", ""))
-        missing  = [f"-{f}" for f, v in [("name", name), ("host", host), ("port", port_val)]
-                    if not v]
-        if missing:
-            self.send(nick, f"Missing required flag(s): {', '.join(missing)}")
-            self.send(nick, "Usage: addnet -name <n> -host <host> -port <port> [-ssl|-plaintext]")
-            return
-        if not port_val.isdigit():
-            self.send(nick, f"Invalid port: {port_val!r} — must be a number.")
-            return
-        port = int(port_val)
-        if not (1 <= port <= 65535):
-            self.send(nick, f"Port {port} out of range (1-65535).")
-            return
-        # Default to SSL unless -plaintext is explicitly given
-        ssl = "plaintext" not in flags
-        from database.models import add_network
-        ok = add_network(name, host, port, ssl)
-        if not ok:
-            self.send(nick, f"Network {name!r} already exists.")
-            return
-        bot_cfg = self.cfg.get("bot", {})
-        net_cfg = {
-            "name": name, "host": host, "port": port, "ssl": ssl,
-            "nick":     bot_cfg.get("nick",     "statsbot"),
-            "altnick":  bot_cfg.get("altnick",  "statsbot_"),
-            "ident":    bot_cfg.get("ident",    "statsbot"),
-            "realname": bot_cfg.get("realname", "IRC Stats Bot"),
-            "channels": [], "cmd_prefix": "!",
-        }
-        self._post_event({"action": "add_network", "net_cfg": net_cfg})
-        ssl_tag = "SSL" if ssl else "plaintext"
-        self.send(nick, f"Network {name} ({host}:{port} {ssl_tag}) added and connecting.")
-        self.send(nick, f"Use: addchan -network {name} #channel  to start tracking.")
+        self.send(nick, "Networks are now managed via config.yml.")
+        self.send(nick, "Add the network there, then run: rehash")
 
     def _cmd_delnet(self, nick: str, args: str):
         """delnet -name <n>"""
@@ -501,9 +542,7 @@ class PMCommandHandler:
             return
         self.send(nick, f"Language for {chan} on {network} set to {lang}.")
 
-    def _cmd_reload(self, nick: str):
-        if not self._require_auth(nick): return
-        self.send(nick, "Changes apply immediately — no reload needed.")
+
 
     def _cmd_nets(self, nick: str):
         """List all networks in the DB."""

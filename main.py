@@ -188,7 +188,8 @@ def main():
         pm_h = PMCommandHandler(
             network_name, auth,
             lambda nick, tx: _pm_ref[0] and _pm_ref[0](nick, tx),
-            config
+            config,
+            config_path=args.config,
         )
         conn = IRCConnector(config, net_cfg, sensors, cmd_h, pm_handler=pm_h)
         conn.reload_queue = reload_queue

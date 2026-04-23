@@ -1186,50 +1186,80 @@ def get_karma_nick(network: str, channel: str, nick: str) -> int:
 # ─── Network / Channel Registry ──────────────────────────────────────────────
 
 def seed_from_config(config: dict) -> None:
-    """Seed networks and bot_channels from config.yml (INSERT OR IGNORE — DB wins)."""
+    """Synchronise the DB with config.yml on startup.
+
+    - Networks in config: upserted (all fields kept in sync).
+    - Networks in DB but absent from config: disabled (enabled=0).
+      Stats are preserved — use `delnet` to permanently delete.
+    - Channels in config: added if not already tracked (INSERT OR IGNORE).
+    - Channels previously in config but now removed: left as-is in DB;
+      use `delchan` to stop tracking and delete stats.
+    """
+    config_names = {net["name"] for net in config.get("networks", [])}
+
     with get_conn() as conn:
         for net in config.get("networks", []):
             on_connect_json = (
                 json.dumps(net["on_connect"]) if net.get("on_connect") else None
             )
+            vals = (
+                net["name"], net["host"],
+                net.get("port", 6667),
+                1 if net.get("ssl", False) else 0,
+                net.get("nick"), net.get("altnick"),
+                net.get("ident"), net.get("realname"),
+                net.get("sasl", {}).get("username"),
+                net.get("sasl", {}).get("password"),
+                net.get("nickserv_password"),
+                net.get("server_password"),
+                1 if net.get("ghost") else 0,
+                on_connect_json,
+                net.get("cmd_prefix", "!"),
+            )
+            # Upsert: insert if new, update every field if existing.
+            # This makes config.yml the single source of truth for all
+            # network settings — no more "DB wins on conflict".
             conn.execute(
-                """INSERT OR IGNORE INTO networks
+                """INSERT INTO networks
                    (name, host, port, ssl, nick, altnick, ident, realname,
                     sasl_user, sasl_pass, nickserv_pass, server_pass,
                     ghost, on_connect, cmd_prefix, enabled)
-                   VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,1)""",
-                (
-                    net["name"], net["host"],
-                    net.get("port", 6667),
-                    1 if net.get("ssl", False) else 0,
-                    net.get("nick"), net.get("altnick"),
-                    net.get("ident"), net.get("realname"),
-                    net.get("sasl", {}).get("username"),
-                    net.get("sasl", {}).get("password"),
-                    net.get("nickserv_password"),
-                    net.get("server_password"),
-                    1 if net.get("ghost") else 0,
-                    on_connect_json,
-                    net.get("cmd_prefix", "!"),
-                )
-            )
-            # Always sync mutable-from-config fields on restart
-            conn.execute(
-                """UPDATE networks SET
-                       server_pass=?, ghost=?, on_connect=?
-                   WHERE name=?""",
-                (
-                    net.get("server_password"),
-                    1 if net.get("ghost") else 0,
-                    on_connect_json,
-                    net["name"],
-                )
+                   VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,1)
+                   ON CONFLICT(name) DO UPDATE SET
+                       host=excluded.host,
+                       port=excluded.port,
+                       ssl=excluded.ssl,
+                       nick=excluded.nick,
+                       altnick=excluded.altnick,
+                       ident=excluded.ident,
+                       realname=excluded.realname,
+                       sasl_user=excluded.sasl_user,
+                       sasl_pass=excluded.sasl_pass,
+                       nickserv_pass=excluded.nickserv_pass,
+                       server_pass=excluded.server_pass,
+                       ghost=excluded.ghost,
+                       on_connect=excluded.on_connect,
+                       cmd_prefix=excluded.cmd_prefix,
+                       enabled=1""",
+                vals,
             )
             for chan in net.get("channels", []):
                 conn.execute(
                     "INSERT OR IGNORE INTO bot_channels (network, channel, enabled) VALUES (?,?,1)",
                     (net["name"], chan)
                 )
+
+        # Disable any DB networks no longer present in config.
+        # We disable rather than delete to preserve stats.
+        if config_names:
+            placeholders = ",".join("?" * len(config_names))
+            conn.execute(
+                f"UPDATE networks SET enabled=0 WHERE name NOT IN ({placeholders})",
+                tuple(config_names),
+            )
+        else:
+            # Empty config — disable everything (shouldn't normally happen)
+            conn.execute("UPDATE networks SET enabled=0")
 
 
 def get_all_networks() -> List[Dict]:
