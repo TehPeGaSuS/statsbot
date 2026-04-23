@@ -118,7 +118,7 @@ class PMCommandHandler:
             self.send(nick, "Not identified.")
             return
         from database.models import get_channels, count_users
-        lines = [f"ircstats — network: {self.network}"]
+        lines = [f"Statsbot — network: {self.network}"]
         for conn in self.connectors:
             chans = conn._channel_members
             for chan, members in chans.items():
@@ -632,7 +632,7 @@ class PMCommandHandler:
         return None
     def _cmd_help(self, nick: str):
         lines = [
-            "ircstats PM command reference",
+            "Statsbot PM command reference",
             "=" * 36,
             "",
             "Auth:",
