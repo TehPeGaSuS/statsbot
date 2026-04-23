@@ -1,6 +1,6 @@
-# ircstats configuration reference
+# Statsbot configuration reference
 
-This document covers all configuration options for ircstats. Option names in
+This document covers all configuration options for Statsbot. Option names in
 the `pisg:` section deliberately match [pisg](https://pisg.github.io/) so
 that anyone familiar with pisg can migrate without reading much.
 
@@ -422,7 +422,7 @@ The first nick mentioned after a violent word is recorded as the victim.
 Words considered foul language. Tracked as a percentage of total words.
 **Default:** `["ass", "fuck", "shit", "bitch", "cunt", "cock", "dick"]`
 
-> **Note:** In ircstats, individual big number sub-sections (questions, CAPS,
+> **Note:** In Statsbot, individual big number sub-sections (questions, CAPS,
 > violence, smiles, etc.) are all controlled by `ShowBigNumbers`. In pisg they
 > were always on when `ShowBigNumbers` was on. Future versions may add
 > individual toggles.
@@ -563,7 +563,7 @@ database:
 
 The database is SQLite — zero setup, zero dependencies beyond Python's
 built-in `sqlite3`. Schema migrations run automatically on startup so
-upgrading ircstats never requires manual DB changes.
+upgrading Statsbot never requires manual DB changes.
 
 ---
 
@@ -572,14 +572,14 @@ upgrading ircstats never requires manual DB changes.
 ```yaml
 logging:
   level: "INFO"             # DEBUG, INFO, WARNING, ERROR
-  file: "data/ircstats.log"
+  file: "data/statsbot.log"
 ```
 
 ---
 
 ## Differences from pisg
 
-| Feature | pisg | ircstats |
+| Feature | pisg | Statsbot |
 |---------|------|----------|
 | Data source | Static log files | Live IRC bot (real-time) |
 | Log parsers | 30+ formats | Not needed — we receive events directly |
