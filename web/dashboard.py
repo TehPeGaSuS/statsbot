@@ -75,6 +75,34 @@ def _ago(ts: int) -> str:
 
 # ─── Routes ──────────────────────────────────────────────────────────────────
 
+
+def _canonical_network(name: str):
+    """Return the DB-stored network name matching `name` case-insensitively, or None."""
+    from database.models import get_conn
+    with get_conn() as conn:
+        row = conn.execute(
+            "SELECT name FROM networks WHERE name=? COLLATE NOCASE", (name,)
+        ).fetchone()
+        if row:
+            return row["name"]
+        # Fall back to nicks table (network may exist without a networks row)
+        row = conn.execute(
+            "SELECT DISTINCT network FROM nicks WHERE network=? COLLATE NOCASE", (name,)
+        ).fetchone()
+        return row["network"] if row else None
+
+
+def _canonical_channel(network: str, channel: str):
+    """Return the DB-stored channel name matching `channel` case-insensitively, or None."""
+    from database.models import get_conn
+    with get_conn() as conn:
+        row = conn.execute(
+            "SELECT DISTINCT channel FROM nicks WHERE network=? COLLATE NOCASE AND channel=? COLLATE NOCASE",
+            (network, channel)
+        ).fetchone()
+        return row["channel"] if row else None
+
+
 @app.route("/")
 def index():
     from database.models import get_channels, count_users, get_conn
@@ -123,6 +151,12 @@ def index():
 def network_stats(network: str):
     from database.models import get_channels, count_users, get_conn
     web_cfg = _config.get("web", {})
+
+    canonical_net = _canonical_network(network)
+    if canonical_net is None:
+        abort(404)
+    if canonical_net != network:
+        return redirect(url_for("network_stats", network=canonical_net), 301)
 
     all_channels = get_channels(network)
     if not all_channels:
@@ -173,6 +207,21 @@ def channel_stats(network: str, channel: str):
     if not channel.startswith("#"):
         channel = "#" + channel
     period = int(request.args.get("period", 0))
+
+    canonical_net = _canonical_network(network)
+    if canonical_net is None:
+        abort(404)
+    canonical_chan = _canonical_channel(canonical_net, channel)
+    if canonical_chan is None:
+        abort(404)
+    if canonical_net != network or canonical_chan != channel:
+        chan_url = canonical_chan.lstrip("#")
+        return redirect(
+            url_for("channel_stats", network=canonical_net, channel=chan_url)
+            + (f"?period={period}" if period else ""),
+            301
+        )
+
     from web.pisg_page import build_page
     html = build_page(network, channel, period, _config)
     return html
@@ -183,6 +232,8 @@ def api_online(network: str, channel: str):
     if not channel.startswith("#"):
         channel = "#" + channel
     channel = channel.rstrip("/")
+    network  = _canonical_network(network)  or network
+    channel  = _canonical_channel(network, channel) or channel
     count = get_online_count(network, channel)
     return jsonify({"online": count, "network": network, "channel": channel})
 
