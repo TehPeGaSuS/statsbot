@@ -306,23 +306,21 @@ h2.section-title {{ font-size: .8rem; color: var(--blue); text-transform: upperc
 .rank-1 td {{ background: rgba(122,162,247,.08); }}
 .nick-name {{ color: var(--green); font-weight: bold; }}
 .val {{ color: var(--yellow); }}
-.quote-cell {{ color: var(--muted); font-style: italic; font-size: .82rem; max-width: 320px;
-               overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }}
+.quote-cell {{ color: var(--muted); font-style: italic; font-size: .82rem; }}
+.quote-cell div {{ max-width: 320px; word-wrap: break-word; overflow-wrap: break-word; white-space: normal; }}
 .bar-wrap {{ background: var(--bg3); border-radius: 3px; height: 10px; width: 140px; }}
 .bar-fill {{ height: 100%; border-radius: 3px;
              background: linear-gradient(90deg, var(--tab-act), var(--blue)); }}
 
-/* Also active — pisg-style "didn't make it to the top" table */
-.also-active-title {{ color: var(--muted); font-size: .82rem; font-style: italic;
-                      margin: 1rem 0 .4rem; }}
-table.also-active {{ width: 100%; border-collapse: collapse;
-                     margin: 0 0 .8rem; font-size: .8rem; }}
-table.also-active td.rankc10 {{ background: var(--bg2); border: 1px solid var(--border);
-                                 padding: .25rem .55rem; color: var(--fg);
-                                 white-space: nowrap; text-align: left;
-                                 width: 25%; }}
-table.also-active td.rankc10 span.cnt {{ color: var(--muted); margin-left: .25rem;
-                                          font-size: .72rem; }}
+/* Also active */
+.also-active {{ margin: .5rem 0 1.5rem; }}
+.also-active-title {{ color: var(--muted); font-style: italic; font-size: .85rem; margin-bottom: .4rem; }}
+.also-active-table {{ width: 100%; border-collapse: separate; border-spacing: 3px; }}
+.also-active-table td {{ background: var(--bg2); border: 1px solid var(--border); border-radius: 5px;
+    padding: .3rem .6rem; font-size: .82rem; width: calc(20% - 6px); }}
+.also-active-table td.empty {{ background: transparent; border-color: transparent; }}
+.also-active-table .anick {{ color: var(--fg); }}
+.also-active-table .acnt {{ color: var(--muted); font-size: .75rem; margin-left: .3rem; }}
 
 /* Big numbers / hicell */
 table.bignums {{ width: 100%; border-collapse: collapse; margin-bottom: .5rem; }}
@@ -551,31 +549,27 @@ b {{ color: var(--cyan); }}
                     _bars += (f'height:15px;vertical-align:middle"></span>')
             h(f'<td style="white-space:nowrap">{_bars}</td>')
         if show_lastseen: h(f'<td class="small">{last}</td>')
-        if show_quote: h(f'<td class="quote-cell" title="{q}">{q}</td>')
+        if show_quote: h(f'<td class="quote-cell" title="{q}"><div>{q}</div></td>')
         h('</tr>')
 
     h('</tbody></table></div>')
 
-    # "These didn't make it to the top" — pisg-style 4-column table
+    # "These didn't make the top"
     if rest_rows:
-        h(f'<div class="also-active-title"><b><i>{t("also_active", lang)}</i></b></div>')
-        h('<table class="also-active"><tbody>')
-        cols = 4
-        for i, row in enumerate(rest_rows):
-            if i % cols == 0:
-                h('<tr>')
-            st = nick_stats.get(row["nick"], {})
-            v  = st.get(sort_by, row["value"])
-            h(f'<td class="rankc10"><span>{row["nick"]} <span class="cnt">({v:,})</span></span></td>')
-            if i % cols == cols - 1:
-                h('</tr>')
-        # pad final row with empty cells so widths stay even
-        rem = len(rest_rows) % cols
-        if rem:
-            for _ in range(cols - rem):
-                h('<td class="rankc10">&nbsp;</td>')
+        COLS = 5
+        h(f'<div class="also-active">')
+        h(f'<div class="also-active-title"><i>{t("also_active", lang)}</i></div>')
+        h('<table class="also-active-table"><tbody>')
+        rows_chunks = [rest_rows[i:i+COLS] for i in range(0, len(rest_rows), COLS)]
+        for chunk in rows_chunks:
+            h('<tr>')
+            for row in chunk:
+                h(f'<td><span class="anick">{row["nick"]}</span><span class="acnt">({row["value"]:,})</span></td>')
+            # pad to full width
+            for _ in range(COLS - len(chunk)):
+                h('<td class="empty"></td>')
             h('</tr>')
-        h('</tbody></table>')
+        h('</tbody></table></div>')
     # "By the way, there were X other nicks"
     total_other = total_users - len(top_rows) - len(rest_rows)
     if total_other > 0:
