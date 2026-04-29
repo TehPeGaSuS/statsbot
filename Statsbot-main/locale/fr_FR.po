@@ -1,0 +1,418 @@
+# Statsbot — Français (France)
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: fr_FR\n"
+
+msgid "time_today"
+msgstr "aujourd'hui"
+
+msgid "time_yesterday"
+msgstr "hier"
+
+msgid "time_n_days_ago"
+msgstr "il y a {n} jours"
+
+msgid "time_today_at"
+msgstr "aujourd'hui à {time}"
+
+msgid "time_yesterday_at"
+msgstr "hier à {time}"
+
+msgid "time_n_days_ago_at"
+msgstr "il y a {n} jours à {time}"
+
+msgid "page_generated_on"
+msgstr "Statistiques générées le {date}"
+
+msgid "page_reporting_period"
+msgstr "Durant cette période de {n} jours, un total de {total} pseudos différents ont été représentés sur {channel}."
+
+msgid "page_reporting_alltime"
+msgstr "Statistiques générales de {channel} — {total} pseudos différents représentés."
+
+msgid "tab_alltime"
+msgstr "tout"
+
+msgid "tab_today"
+msgstr "aujourd'hui"
+
+msgid "tab_week"
+msgstr "cette semaine"
+
+msgid "tab_month"
+msgstr "ce mois"
+
+msgid "summary_users"
+msgstr "utilisateurs"
+
+msgid "summary_peak_users"
+msgstr "pic d'utilisateurs"
+
+msgid "summary_top_talker"
+msgstr "plus bavard"
+
+msgid "summary_happiest"
+msgstr "plus heureux :)"
+
+msgid "summary_saddest"
+msgstr "plus triste :("
+
+msgid "summary_most_online"
+msgstr "plus souvent connecté"
+
+msgid "section_active_times"
+msgstr "Heures les plus actives"
+
+msgid "section_active_nicks"
+msgstr "Pseudos les plus actifs"
+
+msgid "section_big_numbers"
+msgstr "Grands nombres"
+
+msgid "section_active_by_hours"
+msgstr "Pseudos les plus actifs par heure"
+
+msgid "section_most_used_words"
+msgstr "Mots les plus utilisés"
+
+msgid "section_most_ref_nicks"
+msgstr "Pseudos les plus référencés"
+
+msgid "section_smileys"
+msgstr "Smileys :-)"
+
+msgid "section_karma"
+msgstr "Karma"
+
+msgid "section_most_ref_urls"
+msgstr "URLs les plus référencées"
+
+msgid "section_latest_topics"
+msgstr "Derniers sujets"
+
+msgid "section_other_numbers"
+msgstr "Autres chiffres intéressants"
+
+msgid "col_number_of_lines"
+msgstr "Nombre de lignes"
+
+msgid "col_number_of_words"
+msgstr "Nombre de mots"
+
+msgid "col_words_per_line"
+msgstr "Mots par ligne"
+
+msgid "col_chars_per_line"
+msgstr "Caractères par ligne"
+
+msgid "col_when"
+msgstr "Quand ?"
+
+msgid "col_last_seen"
+msgstr "Dernière présence"
+
+msgid "col_random_quote"
+msgstr "Citation aléatoire"
+
+msgid "col_word"
+msgstr "Mot"
+
+msgid "col_number_of_uses"
+msgstr "Nombre d'utilisations"
+
+msgid "col_last_used_by"
+msgstr "Dernière utilisation par"
+
+msgid "col_nick"
+msgstr "Pseudo"
+
+msgid "col_last_by"
+msgstr "Dernier par"
+
+msgid "col_smiley"
+msgstr "Smiley"
+
+msgid "col_uses"
+msgstr "Utilisations"
+
+msgid "col_top_user"
+msgstr "Utilisateur principal"
+
+msgid "col_url"
+msgstr "URL"
+
+msgid "col_score"
+msgstr "Score"
+
+msgid "also_active"
+msgstr "Ceux-ci n'ont pas atteint le sommet :"
+
+msgid "by_the_way"
+msgstr "Au fait, il y avait {n} autres pseudos."
+
+msgid "legend_band_0_5"
+msgstr "0-5"
+
+msgid "legend_band_6_11"
+msgstr "6-11"
+
+msgid "legend_band_12_17"
+msgstr "12-17"
+
+msgid "legend_band_18_23"
+msgstr "18-23"
+
+msgid "bignums_questions"
+msgstr "{nick} est un peu plus lent que les autres, ou pose trop de questions ?  {pct}% des lignes contenaient une question !"
+
+msgid "bignums_questions_sub"
+msgstr "{nick} ne savait pas grand-chose non plus. {pct}% de ses lignes étaient des questions."
+
+msgid "bignums_caps_loud"
+msgstr "Le plus bruyant était {nick}, qui a crié {pct}% du temps !"
+
+msgid "bignums_caps_loud_sub"
+msgstr "Un autre grand crieur était {nick}, qui a hurlé {pct}% du temps !"
+
+msgid "bignums_caps_shift"
+msgstr "La touche Maj de {nick} semble coincée : {pct}% du temps écrit en MAJUSCULES."
+
+msgid "bignums_caps_shift_sub"
+msgstr "{nick} a oublié de désactiver le Verr. Maj. Et a écrit en MAJUSCULES {pct}% du temps."
+
+msgid "bignums_violent"
+msgstr "{nick} est une personne très agressive. A attaqué les autres {count} fois."
+
+msgid "bignums_violent_plural"
+msgstr "{nick} est une personne très agressive. A attaqué les autres {count} fois."
+
+msgid "bignums_violent_sub"
+msgstr "{nick} ne peut pas non plus contrôler ses agressions. A attaqué les autres {count} fois."
+
+msgid "bignums_violent_nobody"
+msgstr "Personne n'a frappé qui que ce soit. Tout le monde a été sympathique."
+
+msgid "bignums_attacked"
+msgstr "Pauvre {nick}, personne ne l'aime. A été attaqué·e {count} fois."
+
+msgid "bignums_attacked_plural"
+msgstr "Pauvre {nick}, personne ne l'aime. A été attaqué·e {count} fois."
+
+msgid "bignums_attacked_sub"
+msgstr "{nick} semble aussi peu apprécié·e. A pris {count} coups."
+
+msgid "for_example"
+msgstr "Par exemple, comme ceci :"
+
+msgid "bignums_happy"
+msgstr "{nick} apporte de la joie au monde. {pct}% de ses lignes contenaient des smileys souriants. :)"
+
+msgid "bignums_happy_sub"
+msgstr "{nick} n'est pas non plus une personne triste, souriant {pct}% du temps."
+
+msgid "bignums_happy_nobody"
+msgstr "Personne ne sourit dans ce canal ! Égayez-vous."
+
+msgid "bignums_sad"
+msgstr "{nick} semble triste en ce moment : {pct}% de ses lignes contenaient des smileys tristes. :("
+
+msgid "bignums_sad_sub"
+msgstr "{nick} est aussi une personne triste, pleurant {pct}% du temps."
+
+msgid "bignums_sad_nobody"
+msgstr "Personne n'est triste dans ce canal ! Quel canal joyeux. :-)"
+
+msgid "bignums_longest_lines"
+msgstr "{nick} a écrit les lignes les plus longues, avec une moyenne de {avg} lettres par ligne."
+
+msgid "bignums_longest_lines_sub"
+msgstr "La moyenne de {channel} était de {avg} lettres par ligne."
+
+msgid "bignums_shortest_lines"
+msgstr "{nick} a écrit les lignes les plus courtes, avec une moyenne de {avg} caractères par ligne."
+
+msgid "bignums_shortest_lines_sub"
+msgstr "{nick} était aussi laconique, avec une moyenne de {avg} caractères."
+
+msgid "bignums_words_total"
+msgstr "{nick} a dit un total de {count} mots !"
+
+msgid "bignums_words_total_sub"
+msgstr "Le fidèle suiveur de {nick}, {nick2}, n'a pas autant parlé : {count} mots."
+
+msgid "bignums_wpl"
+msgstr "{nick} a écrit une moyenne de {avg} mots par ligne."
+
+msgid "bignums_wpl_sub"
+msgstr "La moyenne du canal était de {avg} mots par ligne."
+
+msgid "other_kicked"
+msgstr "{nick} n'était pas très populaire, recevant {count} kick !"
+
+msgid "other_kicked_plural"
+msgstr "{nick} n'était pas très populaire, recevant {count} kicks !"
+
+msgid "other_kicked_sub"
+msgstr "{nick} semblait aussi être détesté : {count} kicks reçus."
+
+msgid "other_kicks_given"
+msgstr "{nick} est soit fou, soit un op équitable, virant {count} personne !"
+
+msgid "other_kicks_given_plural"
+msgstr "{nick} est soit fou, soit un op équitable, virant {count} personnes !"
+
+msgid "other_kicks_given_sub"
+msgstr "Le fidèle suiveur de {nick}, {nick2}, a viré environ {count} personnes."
+
+msgid "other_ops_given"
+msgstr "{nick} a donné {count} op dans le canal..."
+
+msgid "other_ops_given_plural"
+msgstr "{nick} a donné {count} ops dans le canal..."
+
+msgid "other_ops_given_sub"
+msgstr "{nick} a aussi été généreux avec les ops, en donnant {count} fois."
+
+msgid "other_ops_none_given"
+msgstr "Étrange, aucun op n'a été donné sur {channel} !"
+
+msgid "other_ops_taken"
+msgstr "{nick} est la machine à deop du canal, retirant les ops à {count} personne."
+
+msgid "other_ops_taken_plural"
+msgstr "{nick} est la machine à deop du canal, retirant les ops à {count} personnes."
+
+msgid "other_ops_taken_sub"
+msgstr "{nick} a aussi retiré des ops {count} fois."
+
+msgid "other_ops_none_taken"
+msgstr "Waouh, aucun op n'a été retiré sur {channel} !"
+
+msgid "other_halfops_given"
+msgstr "{nick} a donné {count} halfop dans le canal..."
+
+msgid "other_halfops_given_plural"
+msgstr "{nick} a donné {count} halfops dans le canal..."
+
+msgid "other_halfops_given_sub"
+msgstr "{nick} a aussi donné des halfops {count} fois."
+
+msgid "other_halfops_none_given"
+msgstr "Étrange, aucun halfop n'a été donné sur {channel} !"
+
+msgid "other_halfops_taken"
+msgstr "{nick} a retiré des halfops {count} fois."
+
+msgid "other_halfops_taken_plural"
+msgstr "{nick} a retiré des halfops {count} fois."
+
+msgid "other_halfops_none_taken"
+msgstr "Waouh, aucun halfop n'a été retiré sur {channel} !"
+
+msgid "other_voice_given"
+msgstr "{nick} est très généreux avec le voice, en le donnant {count} fois."
+
+msgid "other_voice_given_plural"
+msgstr "{nick} est très généreux avec le voice, en le donnant {count} fois."
+
+msgid "other_voice_given_sub"
+msgstr "{nick} a aussi été assez vocal pour donner le voice, {count} fois."
+
+msgid "other_voice_none_given"
+msgstr "Étrange, aucun voice n'a été donné sur {channel} !"
+
+msgid "other_voice_taken"
+msgstr "{nick} a retiré le voice {count} fois — quelqu'un devait le faire."
+
+msgid "other_voice_taken_plural"
+msgstr "{nick} a retiré le voice {count} fois — quelqu'un devait le faire."
+
+msgid "other_voice_taken_sub"
+msgstr "{nick} a aussi réduit des gens au silence {count} fois."
+
+msgid "other_voice_none_taken"
+msgstr "Aucun voice n'a été retiré sur {channel} !"
+
+msgid "other_actions"
+msgstr "{nick} nous dit toujours ce qu'il·elle fait : {count} action !"
+
+msgid "other_actions_plural"
+msgstr "{nick} nous dit toujours ce qu'il·elle fait : {count} actions !"
+
+msgid "other_actions_sub"
+msgstr "En outre, {nick} nous dit ce qui se passe avec {count} actions."
+
+msgid "other_actions_nobody"
+msgstr "Aucune action dans ce canal !"
+
+msgid "other_monologues"
+msgstr "{nick} se parle beaucoup à soi-même. A écrit plus de 5 lignes d'affilée {count} fois !"
+
+msgid "other_monologues_plural"
+msgstr "{nick} se parle beaucoup à soi-même. A écrit plus de 5 lignes d'affilée {count} fois !"
+
+msgid "other_monologues_sub"
+msgstr "Une autre personne solitaire était {nick}, qui a réussi {count} fois."
+
+msgid "other_joins"
+msgstr "{nick} n'arrivait pas à décider de rester ou de partir. {count} entrée durant cette période !"
+
+msgid "other_joins_plural"
+msgstr "{nick} n'arrivait pas à décider de rester ou de partir. {count} entrées durant cette période !"
+
+msgid "other_foul"
+msgstr "{nick} a une bouche très sale. {pct}% de ses mots étaient du langage grossier."
+
+msgid "other_foul_sub"
+msgstr "{nick} fait aussi rougir les marins, {pct}% du temps."
+
+msgid "other_foul_nobody"
+msgstr "Personne ne parle grossièrement ici ! Remarquable."
+
+msgid "topics_set_count"
+msgstr "Le sujet a été défini {count} fois."
+
+msgid "topics_set_count_plural"
+msgstr "Le sujet a été défini {count} fois."
+
+msgid "legend_total_lines"
+msgstr "Total des lignes"
+
+msgid "legend_unique_nicks"
+msgstr "Pseudos uniques"
+
+msgid "legend_avg_wpl"
+msgstr "Moy. mots/ligne"
+
+msgid "legend_avg_cpl"
+msgstr "Moy. caractères/ligne"
+
+msgid "legend_topics_set"
+msgstr "Sujets définis"
+
+msgid "legend_topics_set_n"
+msgstr "{n} fois"
+
+msgid "legend_generated_by"
+msgstr "Stats de {channel} sur {network}{by} — générées le {date} par"
+
+msgid "cmd_stats_url"
+msgstr "Stats de {channel} : {url}"
+
+msgid "cmd_stats_no_stats"
+msgstr "Pas encore de statistiques."
+
+msgid "cmd_top_result"
+msgstr "{channel} top {n} : {list}"
+
+msgid "cmd_quote_none_for_nick"
+msgstr "Aucune citation pour {nick}."
+
+msgid "cmd_quote_none"
+msgstr "Pas encore de citations."
+
+msgid "cmd_quote_result"
+msgstr "Citation aléatoire de {nick} : \"{quote}\""
+

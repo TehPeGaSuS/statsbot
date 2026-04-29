@@ -1,0 +1,141 @@
+bot:
+  nick: "statsbot"        # Default nick — can be overridden per network
+  altnick: "statsbot_"    # Fallback if primary is taken
+  realname: "IRC Stats Bot"
+  ident: "statsbot"
+  # Masters are configured via: python main.py --setup
+
+networks:
+  - name: "libera"
+    host: "irc.libera.chat"
+    port: 6697
+    ssl: true
+    channels:
+      - "#yourchannel"
+    # cmd_prefix: "."  # override global prefix for this network only
+                       # useful if Anope BotServ already uses "!"
+
+    # Authentication — uncomment and fill in what you need:
+
+    # SASL PLAIN — preferred on modern networks (Libera, OFTC, etc.)
+    # sasl:
+    #   username: "statsbot"
+    #   password: "your_password"
+
+    # NickServ IDENTIFY — legacy, works on most networks
+    # nickserv_password: "your_password"
+
+    # Nick ghosting — if primary nick is taken, recover it via NickServ GHOST
+    # Requires nickserv_password (or sasl.password) to be set
+    # ghost: true
+
+    # Server password (for BNCs or private servers)
+    # server_password: "your_password"
+
+    # Per-network identity — overrides the global bot: defaults
+    # nick: "ChanStatsBot"
+    # altnick: "ChanStatsBot_"
+    # realname: "Channel Stats"
+    # ident: "chanstats"
+
+    # Commands sent after successful connect + auth ({nick} = current bot nick)
+    # on_connect:
+    #   - "MODE {nick} +x"       # request cloak (Undernet, some others)
+    #   - "UMODE2 +x"            # alternative (UnrealIRCd)
+    #   - "MODE {nick} +B"       # set bot umode
+
+stats:
+  # Nicks/masks permanently ignored — never tracked, never shown.
+  # Supports nick patterns (*bot*, ChanServ) and full hostmasks (*!*@services.example.org)
+  # Channel-specific ignores can be added at runtime via /msg statsbot ignore add #chan <pattern>
+  ignore:
+    - "ChanServ"
+    - "NickServ"
+    - "MemoServ"
+    - "*Serv"
+    - "*bot*"
+    - "*Bot*"
+
+  auto_ignore_bots: false   # auto-ignore nicks with IRC +B umode — unreliable, opt-in only
+  expire_days: 30           # remove nicks unseen for X days (0 = never)
+  log_wordstats: true       # track word frequency per nick
+  quote_frequency: 5        # log every Nth message as a random quote
+  display_kicks: 5          # how many recent kicks to show
+  kick_context: 5           # lines of context to save with each kick
+
+  happy_smileys: [":-)", ":)", ";)", ";-)", "^_^", ":-D", ":-P", ":P", "=)", ";D",
+                 ":D", "xD", "XD", ":3", "uwu", "owo"]
+
+  sad_smileys: [":-(", ":(", ":'(", "):", "D:", "T_T", ";_;", "o_O", "O_o", ">_<",
+                ":/", ":S"]
+
+web:
+  enabled: true
+  host: "0.0.0.0"
+  port: 8033
+  public_url: ""            # e.g. https://stats.yourserver.org — used by !stats
+  title: "IRC Stats"
+  project_url: "https://github.com/TehPeGaSuS/Statsbot"  # link shown in page footers
+  topnr: 30                 # number of users in top lists
+
+commands:
+  prefix: "!"
+  max_cmds: 5               # flood protection: max N commands
+  max_cmds_window: 60       # ... per X seconds
+
+database:
+  path: "data/stats.db"
+
+logging:
+  level: "INFO"
+  file: "data/ircstats.log"
+
+pisg:
+  # Main nick table
+  ActiveNicks: 25              # rows in main top table (pisg: ActiveNicks)
+  ActiveNicks2: 10             # nicks in "These didn't make it to the top" list (pisg: ActiveNicks2)
+  SortByWords: true            # sort by words (true) or lines (false) (pisg: SortByWords)
+  ShowWords: true              # show word count column (pisg: ShowWords)
+  ShowLines: true              # show line count column (pisg: ShowLines)
+  ShowWpl: true                # words per line column (pisg: ShowWpl)
+  ShowCpl: false               # chars per line column (pisg: ShowCpl)
+  ShowLastSeen: true           # last seen column (pisg: ShowLastSeen)
+  ShowRandQuote: true          # random quote column (pisg: ShowRandQuote)
+  MinQuote: 25                 # min chars for a quote to be picked (pisg: MinQuote)
+  MaxQuote: 65                 # max chars for a quote to be picked (pisg: MaxQuote)
+
+  # Big numbers (all controlled by ShowBigNumbers when false disables all)
+  ShowBigNumbers: true         # master switch for big/other numbers sections (pisg: ShowBigNumbers)
+  BigNumbersThreshold: "sqrt"  # min lines to qualify, or "sqrt" for auto (pisg: BigNumbersThreshold)
+  ViolentWords: ["slaps", "beats", "kicks", "hits", "smacks", "stabs", "hugs", "pokes"]  # pisg: ViolentWords
+  FoulWords: ["ass", "fuck", "shit", "bitch", "cunt", "cock", "dick"]  # pisg: FoulWords
+
+  # Section toggles
+  ShowMostActiveByHour: true   # most active nicks by hour table (pisg: ShowMostActiveByHour)
+  ShowSmileys: true            # per-smiley frequency table (pisg: ShowSmileys)
+  ShowMrn: true                # most referenced nicks (pisg: ShowMrn)
+  ShowOps: true                # ops given/taken/received section (pisg: ShowOps)
+  ShowActiveTimes: true        # most active times chart (pisg: ShowActiveTimes)
+  ShowActiveNicks: true        # most active nicks table (pisg: ShowActiveNicks)
+  ShowMuw: true                # most used words section (pisg: ShowMuw)
+  ShowTopics: true             # latest topics section (pisg: ShowTopics)
+  ShowTime: true               # per-nick activity time bar in main table (pisg: ShowTime)
+  ShowMostActiveByHourGraph: true  # colour bars in most active nicks by hours table (pisg: ShowMostActiveByHourGraph)
+  ShowVoice: false             # voice given/taken/received section (pisg: ShowVoices, default: disabled)
+  ShowHalfops: false           # halfops section (pisg: ShowHalfops, default: disabled)
+  ShowKarma: true              # karma leaderboard (nick++ / nick--)
+  KarmaHistory: 10             # max nicks shown in karma table
+  ShowMru: true                # most referenced URLs (pisg: ShowMru)
+  ShowLegend: true             # page legend/footer (pisg: ShowLegend)
+
+  # History limits
+  TopicHistory: 5              # max topics shown (pisg: TopicHistory)
+  UrlHistory: 10               # max URLs shown (pisg: UrlHistory)
+  WordHistory: 10              # max words in most used words (pisg: WordHistory)
+  WordLength: 4                # min word length to store and display (pisg: WordLength; also gates URL logging when 0)
+  IgnoreWords: []              # words to exclude from word stats (pisg: IgnoreWords)
+  NickHistory: 5               # max nicks in most referenced nicks (pisg: NickHistory)
+  SmileyHistory: 10            # max smileys in smiley table (pisg: SmileyHistory)
+  ActiveNicksByHour: 10        # rows in most active by hour (pisg: ActiveNicksByHour)
+
+  # Page

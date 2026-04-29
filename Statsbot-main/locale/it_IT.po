@@ -1,0 +1,418 @@
+# Statsbot — Italiano (Italia)
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: it_IT\n"
+
+msgid "time_today"
+msgstr "oggi"
+
+msgid "time_yesterday"
+msgstr "ieri"
+
+msgid "time_n_days_ago"
+msgstr "{n} giorni fa"
+
+msgid "time_today_at"
+msgstr "oggi alle {time}"
+
+msgid "time_yesterday_at"
+msgstr "ieri alle {time}"
+
+msgid "time_n_days_ago_at"
+msgstr "{n} giorni fa alle {time}"
+
+msgid "page_generated_on"
+msgstr "Statistiche generate il {date}"
+
+msgid "page_reporting_period"
+msgstr "Durante questo periodo di {n} giorni, un totale di {total} nick diversi sono stati rappresentati su {channel}."
+
+msgid "page_reporting_alltime"
+msgstr "Statistiche generali di {channel} — {total} nick diversi rappresentati."
+
+msgid "tab_alltime"
+msgstr "tutto"
+
+msgid "tab_today"
+msgstr "oggi"
+
+msgid "tab_week"
+msgstr "questa settimana"
+
+msgid "tab_month"
+msgstr "questo mese"
+
+msgid "summary_users"
+msgstr "utenti"
+
+msgid "summary_peak_users"
+msgstr "picco utenti"
+
+msgid "summary_top_talker"
+msgstr "più loquace"
+
+msgid "summary_happiest"
+msgstr "più felice :)"
+
+msgid "summary_saddest"
+msgstr "più triste :("
+
+msgid "summary_most_online"
+msgstr "più presente"
+
+msgid "section_active_times"
+msgstr "Orari più attivi"
+
+msgid "section_active_nicks"
+msgstr "Nick più attivi"
+
+msgid "section_big_numbers"
+msgstr "Grandi numeri"
+
+msgid "section_active_by_hours"
+msgstr "Nick più attivi per ora"
+
+msgid "section_most_used_words"
+msgstr "Parole più usate"
+
+msgid "section_most_ref_nicks"
+msgstr "Nick più referenziati"
+
+msgid "section_smileys"
+msgstr "Emoticon :-)"
+
+msgid "section_karma"
+msgstr "Karma"
+
+msgid "section_most_ref_urls"
+msgstr "URL più referenziati"
+
+msgid "section_latest_topics"
+msgstr "Ultimi argomenti"
+
+msgid "section_other_numbers"
+msgstr "Altri numeri interessanti"
+
+msgid "col_number_of_lines"
+msgstr "Numero di righe"
+
+msgid "col_number_of_words"
+msgstr "Numero di parole"
+
+msgid "col_words_per_line"
+msgstr "Parole per riga"
+
+msgid "col_chars_per_line"
+msgstr "Caratteri per riga"
+
+msgid "col_when"
+msgstr "Quando?"
+
+msgid "col_last_seen"
+msgstr "Ultima presenza"
+
+msgid "col_random_quote"
+msgstr "Citazione casuale"
+
+msgid "col_word"
+msgstr "Parola"
+
+msgid "col_number_of_uses"
+msgstr "Numero di utilizzi"
+
+msgid "col_last_used_by"
+msgstr "Ultimo utilizzo da"
+
+msgid "col_nick"
+msgstr "Nick"
+
+msgid "col_last_by"
+msgstr "Ultimo da"
+
+msgid "col_smiley"
+msgstr "Emoticon"
+
+msgid "col_uses"
+msgstr "Utilizzi"
+
+msgid "col_top_user"
+msgstr "Utente principale"
+
+msgid "col_url"
+msgstr "URL"
+
+msgid "col_score"
+msgstr "Punteggio"
+
+msgid "also_active"
+msgstr "Questi non sono arrivati in cima:"
+
+msgid "by_the_way"
+msgstr "Tra l'altro, c'erano {n} altri nick."
+
+msgid "legend_band_0_5"
+msgstr "0-5"
+
+msgid "legend_band_6_11"
+msgstr "6-11"
+
+msgid "legend_band_12_17"
+msgstr "12-17"
+
+msgid "legend_band_18_23"
+msgstr "18-23"
+
+msgid "bignums_questions"
+msgstr "{nick} è un po' più lento degli altri, o fa troppe domande?  Il {pct}% delle righe conteneva una domanda!"
+
+msgid "bignums_questions_sub"
+msgstr "Anche {nick} non sapeva molto. Il {pct}% delle sue righe erano domande."
+
+msgid "bignums_caps_loud"
+msgstr "Il più rumoroso era {nick}, che ha urlato il {pct}% del tempo!"
+
+msgid "bignums_caps_loud_sub"
+msgstr "Un altro urlatore era {nick}, che ha gridato il {pct}% del tempo!"
+
+msgid "bignums_caps_shift"
+msgstr "Sembra che il tasto Maiusc di {nick} sia bloccato: il {pct}% del tempo ha scritto in MAIUSCOLO."
+
+msgid "bignums_caps_shift_sub"
+msgstr "{nick} si è dimenticato/a di disattivare il Bloc Maiusc. Ha scritto in MAIUSCOLO il {pct}% del tempo."
+
+msgid "bignums_violent"
+msgstr "{nick} è una persona molto aggressiva. Ha attaccato gli altri {count} volta."
+
+msgid "bignums_violent_plural"
+msgstr "{nick} è una persona molto aggressiva. Ha attaccato gli altri {count} volte."
+
+msgid "bignums_violent_sub"
+msgstr "Anche {nick} non riesce a controllare le proprie aggressioni. Ha attaccato gli altri {count} volte."
+
+msgid "bignums_violent_nobody"
+msgstr "Nessuno ha picchiato nessuno. Tutti sono stati amichevoli."
+
+msgid "bignums_attacked"
+msgstr "Poveretto/a {nick}, a nessuno piace. È stato/a attaccato/a {count} volta."
+
+msgid "bignums_attacked_plural"
+msgstr "Poveretto/a {nick}, a nessuno piace. È stato/a attaccato/a {count} volte."
+
+msgid "bignums_attacked_sub"
+msgstr "Anche {nick} sembra non essere apprezzato/a. Ha preso {count} botte."
+
+msgid "for_example"
+msgstr "Per esempio, così:"
+
+msgid "bignums_happy"
+msgstr "{nick} porta gioia al mondo. Il {pct}% delle sue righe conteneva faccine sorridenti. :)"
+
+msgid "bignums_happy_sub"
+msgstr "Anche {nick} non è una persona triste, sorridendo il {pct}% del tempo."
+
+msgid "bignums_happy_nobody"
+msgstr "Nessuno sorride in questo canale! Tiratevi su."
+
+msgid "bignums_sad"
+msgstr "{nick} sembra essere triste in questo momento: il {pct}% delle sue righe conteneva faccine tristi. :("
+
+msgid "bignums_sad_sub"
+msgstr "Anche {nick} è una persona triste, piangendo il {pct}% del tempo."
+
+msgid "bignums_sad_nobody"
+msgstr "Nessuno è triste in questo canale! Che canale felice. :-)"
+
+msgid "bignums_longest_lines"
+msgstr "{nick} ha scritto le righe più lunghe, con una media di {avg} lettere per riga."
+
+msgid "bignums_longest_lines_sub"
+msgstr "La media di {channel} era di {avg} lettere per riga."
+
+msgid "bignums_shortest_lines"
+msgstr "{nick} ha scritto le righe più corte, con una media di {avg} caratteri per riga."
+
+msgid "bignums_shortest_lines_sub"
+msgstr "Anche {nick} era laconico, con una media di {avg} caratteri."
+
+msgid "bignums_words_total"
+msgstr "{nick} ha detto un totale di {count} parole!"
+
+msgid "bignums_words_total_sub"
+msgstr "Il fedele seguace di {nick}, {nick2}, non ha parlato altrettanto: {count} parole."
+
+msgid "bignums_wpl"
+msgstr "{nick} ha scritto una media di {avg} parole per riga."
+
+msgid "bignums_wpl_sub"
+msgstr "La media del canale era di {avg} parole per riga."
+
+msgid "other_kicked"
+msgstr "{nick} non era molto popolare, ricevendo {count} kick!"
+
+msgid "other_kicked_plural"
+msgstr "{nick} non era molto popolare, ricevendo {count} kick!"
+
+msgid "other_kicked_sub"
+msgstr "Anche {nick} sembrava essere odiato: ha ricevuto {count} kick."
+
+msgid "other_kicks_given"
+msgstr "{nick} è pazzo o semplicemente un op giusto, cacciando {count} persona!"
+
+msgid "other_kicks_given_plural"
+msgstr "{nick} è pazzo o semplicemente un op giusto, cacciando {count} persone!"
+
+msgid "other_kicks_given_sub"
+msgstr "Il fedele seguace di {nick}, {nick2}, ha cacciato circa {count} persone."
+
+msgid "other_ops_given"
+msgstr "{nick} ha donato {count} op nel canale..."
+
+msgid "other_ops_given_plural"
+msgstr "{nick} ha donato {count} op nel canale..."
+
+msgid "other_ops_given_sub"
+msgstr "Anche {nick} è stato generoso con gli op, dandoli {count} volte."
+
+msgid "other_ops_none_given"
+msgstr "Strano, nessun op è stato dato su {channel}!"
+
+msgid "other_ops_taken"
+msgstr "{nick} è la macchina del deop del canale, rimuovendo gli op a {count} persona."
+
+msgid "other_ops_taken_plural"
+msgstr "{nick} è la macchina del deop del canale, rimuovendo gli op a {count} persone."
+
+msgid "other_ops_taken_sub"
+msgstr "Anche {nick} ha tolto gli op {count} volte."
+
+msgid "other_ops_none_taken"
+msgstr "Wow, nessun op è stato tolto su {channel}!"
+
+msgid "other_halfops_given"
+msgstr "{nick} ha donato {count} halfop nel canale..."
+
+msgid "other_halfops_given_plural"
+msgstr "{nick} ha donato {count} halfop nel canale..."
+
+msgid "other_halfops_given_sub"
+msgstr "Anche {nick} ha dato halfop {count} volte."
+
+msgid "other_halfops_none_given"
+msgstr "Strano, nessun halfop è stato dato su {channel}!"
+
+msgid "other_halfops_taken"
+msgstr "{nick} ha tolto gli halfop {count} volta."
+
+msgid "other_halfops_taken_plural"
+msgstr "{nick} ha tolto gli halfop {count} volte."
+
+msgid "other_halfops_none_taken"
+msgstr "Wow, nessun halfop è stato tolto su {channel}!"
+
+msgid "other_voice_given"
+msgstr "{nick} è molto generoso con il voice, dandolo {count} volta."
+
+msgid "other_voice_given_plural"
+msgstr "{nick} è molto generoso con il voice, dandolo {count} volte."
+
+msgid "other_voice_given_sub"
+msgstr "Anche {nick} è stato abbastanza attivo nel dare il voice, {count} volte."
+
+msgid "other_voice_none_given"
+msgstr "Strano, nessun voice è stato dato su {channel}!"
+
+msgid "other_voice_taken"
+msgstr "{nick} ha tolto il voice {count} volta — qualcuno doveva farlo."
+
+msgid "other_voice_taken_plural"
+msgstr "{nick} ha tolto il voice {count} volte — qualcuno doveva farlo."
+
+msgid "other_voice_taken_sub"
+msgstr "Anche {nick} ha messo a tacere le persone {count} volte."
+
+msgid "other_voice_none_taken"
+msgstr "Nessun voice è stato tolto su {channel}!"
+
+msgid "other_actions"
+msgstr "{nick} ci fa sempre sapere cosa sta facendo: {count} azione!"
+
+msgid "other_actions_plural"
+msgstr "{nick} ci fa sempre sapere cosa sta facendo: {count} azioni!"
+
+msgid "other_actions_sub"
+msgstr "Inoltre, {nick} ci aggiorna con {count} azioni."
+
+msgid "other_actions_nobody"
+msgstr "Nessuna azione in questo canale!"
+
+msgid "other_monologues"
+msgstr "{nick} parla molto da solo/a. Ha scritto più di 5 righe di fila {count} volta!"
+
+msgid "other_monologues_plural"
+msgstr "{nick} parla molto da solo/a. Ha scritto più di 5 righe di fila {count} volte!"
+
+msgid "other_monologues_sub"
+msgstr "Un altro solitario era {nick}, che ci è riuscito {count} volte."
+
+msgid "other_joins"
+msgstr "{nick} non riusciva a decidere se restare o andarsene. {count} entrata durante questo periodo!"
+
+msgid "other_joins_plural"
+msgstr "{nick} non riusciva a decidere se restare o andarsene. {count} entrate durante questo periodo!"
+
+msgid "other_foul"
+msgstr "{nick} ha una bocca molto sporca. Il {pct}% delle sue parole era linguaggio volgare."
+
+msgid "other_foul_sub"
+msgstr "Anche {nick} fa arrossire i marinai, il {pct}% del tempo."
+
+msgid "other_foul_nobody"
+msgstr "Nessuno usa linguaggio volgare qui! Notevole."
+
+msgid "topics_set_count"
+msgstr "L'argomento è stato impostato {count} volta."
+
+msgid "topics_set_count_plural"
+msgstr "L'argomento è stato impostato {count} volte."
+
+msgid "legend_total_lines"
+msgstr "Totale righe"
+
+msgid "legend_unique_nicks"
+msgstr "Nick unici"
+
+msgid "legend_avg_wpl"
+msgstr "Media parole/riga"
+
+msgid "legend_avg_cpl"
+msgstr "Media caratteri/riga"
+
+msgid "legend_topics_set"
+msgstr "Argomenti impostati"
+
+msgid "legend_topics_set_n"
+msgstr "{n} volte"
+
+msgid "legend_generated_by"
+msgstr "Statistiche di {channel} su {network}{by} — generate il {date} da"
+
+msgid "cmd_stats_url"
+msgstr "Statistiche di {channel}: {url}"
+
+msgid "cmd_stats_no_stats"
+msgstr "Ancora nessuna statistica."
+
+msgid "cmd_top_result"
+msgstr "{channel} top {n}: {list}"
+
+msgid "cmd_quote_none_for_nick"
+msgstr "Nessuna citazione per {nick}."
+
+msgid "cmd_quote_none"
+msgstr "Ancora nessuna citazione."
+
+msgid "cmd_quote_result"
+msgstr "Citazione casuale di {nick}: \"{quote}\""
+
