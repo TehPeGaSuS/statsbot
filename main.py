@@ -145,6 +145,12 @@ def main():
             cfg["sasl"] = {"username": n["sasl_user"], "password": n["sasl_pass"]}
         if n.get("nickserv_pass"):
             cfg["nickserv_password"] = n["nickserv_pass"]
+        # on_connect and ghost_command live only in config.yml — merge them in
+        yml_net = next((x for x in config.get("networks", [])
+                        if x.get("name", "").lower() == n["name"].lower()), {})
+        for key in ("on_connect", "ghost", "ghost_command", "server_password"):
+            if key in yml_net:
+                cfg[key] = yml_net[key]
         return cfg
 
     networks = [db_net_to_cfg(n) for n in db_networks]
