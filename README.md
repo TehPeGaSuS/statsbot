@@ -10,13 +10,13 @@ live web dashboard — no log files, no cron jobs, no static HTML generation.
 
 ---
 > [!NOTE]
-> Statsbot is feature-complete — but the door is always open.
-> After 80 commits, Statsbot does everything PISG does, except it doesn't need log files,
-> doesn't need a cron job, doesn't generate static HTML, and doesn't make you feel like it's 2003.
-> It connects to IRC, watches what happens, and serves live stats — no logs, no hassle, no excuses.
-> Is it finished? Pretty much. Is it perfect? Probably not. Found a bug? Open an issue. Have a wild idea? Open a PR.
-> Speak French, Italian or Portuguese and spotted a dodgy translation? You know what to do.
-> The IRC scene survived the death of mIRC scripts, the rise of Discord, and seventeen different attempts to replace IRC with something "better".
+> Statsbot is feature-complete — but the door is always open.\
+> After 81 commits, Statsbot does everything PISG does, except it doesn't need log files,\
+> doesn't need a cron job, doesn't generate static HTML, and doesn't make you feel like it's 2003.\
+> It connects to IRC, watches what happens, and serves live stats — no logs, no hassle, no excuses.\
+> Is it finished? Pretty much. Is it perfect? Probably not. Found a bug? Open an issue. Have a wild idea? Open a PR.\
+> Speak French, Italian or Portuguese and spotted a dodgy translation? You know what to do.\
+> The IRC scene survived the death of mIRC scripts, the rise of Discord, and seventeen different attempts to replace IRC with something "better".\
 > Statsbot will survive your pull request.
 
 ---
@@ -341,7 +341,5 @@ see the "not yet implemented" table below for what's missing.
 | Daily activity graph (lines per day) | Not yet |
 | NickTracking / nick aliases | Not yet |
 | Music charts (`now playing:`) | Not yet |
-| Op/voice/halfop statistics | ✓ |
-| `ShowTime` (when-active time bar) | ✓ |
 
 All other pisg features are implemented. Contributions welcome.
