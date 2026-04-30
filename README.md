@@ -155,6 +155,8 @@ See **[DOCS.md](DOCS.md)** for the complete reference.
 | `delnet -name <n>` | Remove network and delete all its stats |
 | `addchan [-network <net>] #channel` | Join and track a channel |
 | `delchan [-network <net>] #channel` | Part channel and delete all its stats |
+| `join [-network <net>] #channel [key]` | Ad-hoc join without adding to DB (useful after a ban is lifted) |
+| `part [-network <net>] #channel [reason]` | Ad-hoc part without removing from DB |
 
 ---
 
@@ -329,6 +331,6 @@ see the "not yet implemented" table below for what's missing.
 | NickTracking / nick aliases | Not yet |
 | Music charts (`now playing:`) | Not yet |
 | Op/voice/halfop statistics | ✓ |
-| `ShowTime` (when-active time bar) | Not yet |
+| `ShowTime` (when-active time bar) | ✓ |
 
 All other pisg features are implemented. Contributions welcome.

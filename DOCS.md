@@ -1,6 +1,6 @@
-# ircstats configuration reference
+# Statsbot configuration reference
 
-This document covers all configuration options for ircstats. Option names in
+This document covers all configuration options for Statsbot. Option names in
 the `pisg:` section deliberately match [pisg](https://pisg.github.io/) so
 that anyone familiar with pisg can migrate without reading much.
 
@@ -69,9 +69,10 @@ networks:
     # NickServ IDENTIFY — legacy, works on most networks including Undernet
     # nickserv_password: "your_password"
 
-    # Nick ghosting — if primary nick is taken, send GHOST and reclaim it.
-    # Requires nickserv_password or sasl.password.
+    # Nick ghosting — if primary nick is taken, switch to altnick and reclaim
+    # the primary nick via NickServ. Requires nickserv_password or sasl.password.
     # ghost: true
+    # ghost_command: "GHOST"   # Use "RELEASE" for DALnet (default: GHOST)
 
     # Server password — for BNCs or private servers that require PASS
     # server_password: "your_password"
@@ -82,7 +83,32 @@ networks:
     #   - "MODE {nick} +x"      # request cloak (Undernet, others)
     #   - "UMODE2 +x"           # alternative cloak (UnrealIRCd)
     #   - "MODE {nick} +B"      # set bot flag
+
+    # ── Channel join retries ──────────────────────────────────────────────
+    # If a channel can't be joined (full, +i, banned, +k, needs registration,
+    # DALnet temp unavailable), the bot retries automatically.
+    # join_retries: 5            # max attempts per channel (default 5)
+    # join_retry_delay: 30       # seconds between attempts (default 30)
 ```
+
+### Channel join retries
+
+The bot tracks join state per channel. When the server confirms a self-JOIN
+the channel is marked joined and any pending retry is cancelled. If the join
+fails with one of the numerics below, a retry is scheduled with
+`join_retry_delay` seconds between attempts, up to `join_retries` total:
+
+| Numeric | Meaning |
+|---------|---------|
+| `437` | Nick/channel temporarily unavailable (DALnet) |
+| `471` | Channel is full (`+l`) |
+| `473` | Invite-only (`+i`) |
+| `474` | Banned from channel (`+b`) |
+| `475` | Bad channel key (`+k`) |
+| `477` | Channel requires a registered nick / SASL |
+
+Both options can also be set globally under `bot:` and are overridden
+per-network when present. Defaults: `5` retries, `30` second delay.
 
 ### Authentication flow
 
@@ -95,8 +121,8 @@ networks:
    - Switches to `altnick`
    - Sends `PRIVMSG NickServ :GHOST <nick> <password>`
    - Watches for the confirmation notice and then sends `NICK <primary>`
-5. `on_connect` commands fire after authentication is confirmed (or immediately
-   on `001` if no auth is configured).
+5. `on_connect` commands fire immediately on `001`, independent of authentication.
+   They run whether or not NickServ or SASL auth is configured.
 
 ### Per-network identity
 
@@ -311,6 +337,12 @@ networks:
 | `delnet -name <n>` | Disconnect a network and permanently delete **all** its stats |
 | `addchan [-network <net>] #channel` | Join and start tracking a channel. `-network` is optional if you're already on that network. |
 | `delchan [-network <net>] #channel` | Part a channel and permanently delete **all** its stats |
+| `join [-network <net>] #channel [key]` | Ad-hoc join a channel without adding it to the database. Useful after a ban is lifted or to re-attempt a failed join. Optional `key` for `+k` channels. |
+| `part [-network <net>] #channel [reason]` | Ad-hoc part a channel without removing it from the database. The bot will rejoin it on the next reconnect. |
+
+> **`join`/`part` vs `addchan`/`delchan`:** `join`/`part` are runtime-only and
+> do **not** touch the database — use them for temporary actions. `addchan`
+> and `delchan` modify persistent tracking (and `delchan` deletes stats).
 
 > **Destructive operations:** `delnet` and `delchan` cascade-delete all stats,
 > quotes, URLs, topics, kick logs, karma, and hourly data for that
@@ -326,6 +358,12 @@ addchan #general                        (on current network)
 addchan -network SwiftIRC #general      (on a different network)
 delchan #general
 delchan -network SwiftIRC #general
+
+join #general                           (rejoin after a ban is lifted)
+join #secret hunter2                    (with channel key)
+join -network SwiftIRC #general
+part #general
+part #general going for lunch
 ```
 
 ---
@@ -343,7 +381,7 @@ Number of nicks shown in the "Most active nicks" table.
 
 #### `ActiveNicks2`
 Number of nicks shown in the "These didn't make it to the top" secondary list.
-**Default:** `50` — pisg default: 30
+**Default:** `10` — pisg default: 30
 
 #### `SortByWords`
 Sort the main nick table by words (`true`) or lines (`false`).
@@ -406,7 +444,7 @@ The first nick mentioned after a violent word is recorded as the victim.
 Words considered foul language. Tracked as a percentage of total words.
 **Default:** `["ass", "fuck", "shit", "bitch", "cunt", "cock", "dick"]`
 
-> **Note:** In ircstats, individual big number sub-sections (questions, CAPS,
+> **Note:** In Statsbot, individual big number sub-sections (questions, CAPS,
 > violence, smiles, etc.) are all controlled by `ShowBigNumbers`. In pisg they
 > were always on when `ShowBigNumbers` was on. Future versions may add
 > individual toggles.
@@ -414,6 +452,12 @@ Words considered foul language. Tracked as a percentage of total words.
 ---
 
 ### Section toggles
+
+#### `ShowTime`
+Show the activity time-band bars in the main nick table — coloured bars
+indicating when each nick is most active (four 6-hour bands: night, morning,
+afternoon, evening). pisg equivalent: `ShowTime`.
+**Default:** `true` — pisg default: true
 
 #### `ShowMostActiveByHour`
 Show the "Most active nicks by hour" table, split into four 6-hour bands
@@ -547,7 +591,7 @@ database:
 
 The database is SQLite — zero setup, zero dependencies beyond Python's
 built-in `sqlite3`. Schema migrations run automatically on startup so
-upgrading ircstats never requires manual DB changes.
+upgrading Statsbot never requires manual DB changes.
 
 ---
 
@@ -563,10 +607,10 @@ logging:
 
 ## Differences from pisg
 
-| Feature | pisg | ircstats |
+| Feature | pisg | Statsbot |
 |---------|------|----------|
 | Data source | Static log files | Live IRC bot (real-time) |
-| Log parsers | 30+ formats | Not needed — we receive events directly |
+| Log parsers | 30+ formats | Not needed — events received directly |
 | Tracking | Per-mask (nick!user@host) | Per-nick |
 | Nick merging | Aliases + NickTracking | Not supported (each nick is its own entry) |
 | Output | Static HTML file | Live Flask web server |

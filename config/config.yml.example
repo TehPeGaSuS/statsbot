@@ -3,8 +3,6 @@ bot:
   altnick: "statsbot_"    # Fallback if primary is taken
   realname: "IRC Stats Bot"
   ident: "statsbot"
-  join_retries: 5	# Number of tries to rejoin a channel
-  join_retry_delay: 30	# Delay, in seconds, between each retry
   # Masters are configured via: python main.py --setup
 
 networks:
@@ -81,6 +79,7 @@ web:
   public_url: ""            # e.g. https://stats.yourserver.org — used by !stats
   title: "IRC Stats"
   project_url: "https://github.com/TehPeGaSuS/Statsbot"  # link shown in page footers
+  topnr: 30                 # number of users in top lists
 
 commands:
   prefix: "!"
@@ -141,3 +140,5 @@ pisg:
   NickHistory: 5               # max nicks in most referenced nicks (pisg: NickHistory)
   SmileyHistory: 10            # max smileys in smiley table (pisg: SmileyHistory)
   ActiveNicksByHour: 10        # rows in most active by hour (pisg: ActiveNicksByHour)
+
+  # Page
