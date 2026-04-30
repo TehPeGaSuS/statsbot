@@ -548,21 +548,74 @@ b {{ color: var(--cyan); }}
 
     h('</tbody></table></div>')
 
-    # "These didn't make the top"
+    # "These didn't make the top" — mirrors the main nick table styling/columns
     if rest_rows:
         rest_max = rest_rows[0]["value"] if rest_rows else 1
         h(f'<div class="also-active">')
         h(f'<div class="also-active-title"><i>{t("also_active", lang)}</i></div>')
         h('<div class="tscroll"><table class="nick-table"><thead><tr>')
-        h(f'<th class="rank">#</th><th>Nick</th><th>{t("col_number_of_lines" if sort_by == "lines" else "col_number_of_words", lang)}</th>')
+        h('<th class="rank">#</th><th>Nick</th>')
+        if show_lines:    h(f'<th>{t("col_number_of_lines", lang)}</th>')
+        if show_words:    h(f'<th>{t("col_number_of_words", lang)}</th>')
+        if show_wpl:      h(f'<th>{t("col_words_per_line", lang)}</th>')
+        if show_cpl:      h(f'<th>{t("col_chars_per_line", lang)}</th>')
+        if show_time:     h(f'<th>{t("col_when", lang)}</th>')
+        if show_lastseen: h(f'<th>{t("col_last_seen", lang)}</th>')
+        if show_quote:    h(f'<th>{t("col_random_quote", lang)}</th>')
         h('</tr></thead><tbody>')
+
         for i, row in enumerate(rest_rows):
-            pct = int(row["value"] / rest_max * 100) if rest_max else 0
-            h(f'<tr>')
+            nick  = row["nick"]
+            st    = nick_stats.get(nick, {})
+            lines = st.get("lines", 0)
+            words = st.get("words", 0)
+            wpl   = f"{words/lines:.1f}" if lines else "0"
+            cpl   = f"{st.get('letters',0)/lines:.1f}" if lines else "0"
+            last  = _ago(st.get("last_seen", 0), lang)
+            pct   = int(row["value"] / rest_max * 100) if rest_max else 0
+
+            # Random quote (same logic as main table)
+            q = ""
+            if show_quote:
+                min_q = pisg.get("MinQuote", 25)
+                max_q = pisg.get("MaxQuote", 65)
+                from database.models import get_quote_for_nick, get_conn as _gc2
+                with _gc2() as _qc:
+                    _qrows = _qc.execute(
+                        """SELECT q.quote FROM quotes q JOIN nicks n ON n.id=q.nick_id
+                           WHERE n.nick=? AND n.network=? AND n.channel=?
+                           AND length(q.quote) BETWEEN ? AND ?
+                           ORDER BY RANDOM() LIMIT 1""",
+                        (nick, network, channel, min_q, max_q)
+                    ).fetchone()
+                if _qrows:
+                    q = _qrows["quote"][:80]
+                else:
+                    qr = get_quote_for_nick(nick, network, channel)
+                    q  = qr["quote"][:80] if qr else ""
+
+            h('<tr>')
             h(f'<td class="rank">{top_n + i + 1}</td>')
-            h(f'<td><span class="nick-name">{row["nick"]}</span>')
-            h(f'<br><div class="bar-wrap"><div class="bar-fill" style="width:{pct}%"></div></div></td>')
-            h(f'<td class="val">{row["value"]:,}</td>')
+            h(f'<td><span class="nick-name">{nick}</span><br>'
+              f'<div class="bar-wrap"><div class="bar-fill" style="width:{pct}%"></div></div></td>')
+            if show_lines: h(f'<td class="val">{lines:,}</td>')
+            if show_words: h(f'<td class="val">{words:,}</td>')
+            if show_wpl:   h(f'<td>{wpl}</td>')
+            if show_cpl:   h(f'<td>{cpl}</td>')
+            if show_time:
+                _nb = nick_band_lines.get(nick, [0, 0, 0, 0])
+                _nb_total = sum(_nb) or 1
+                _band_cols = ["blue-h", "green-h", "yellow-h", "red-h"]
+                _bars = ""
+                for _bi, _bv in enumerate(_nb):
+                    _bw = max(1, int(_bv / _nb_total * 40)) if _bv else 0
+                    if _bw:
+                        _bars += (f'<span class="bh-bar {_band_cols[_bi]}" ')
+                        _bars += (f'style="width:{_bw}px;display:inline-block;')
+                        _bars += (f'height:15px;vertical-align:middle"></span>')
+                h(f'<td style="white-space:nowrap">{_bars}</td>')
+            if show_lastseen: h(f'<td class="small">{last}</td>')
+            if show_quote:    h(f'<td class="quote-cell" title="{q}"><div>{q}</div></td>')
             h('</tr>')
         h('</tbody></table></div></div>')
     # "By the way, there were X other nicks"
