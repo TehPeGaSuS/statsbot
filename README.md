@@ -9,9 +9,10 @@ live web dashboard — no log files, no cron jobs, no static HTML generation.
 ![License](https://img.shields.io/badge/license-MIT-green)
 
 ---
+
 > [!NOTE]
 > Statsbot is feature-complete — but the door is always open.\
-> After 81 commits, Statsbot does everything PISG does, except it doesn't need log files,\
+> After 82 commits, Statsbot does everything PISG does, except it doesn't need log files,\
 > doesn't need a cron job, doesn't generate static HTML, and doesn't make you feel like it's 2003.\
 > It connects to IRC, watches what happens, and serves live stats — no logs, no hassle, no excuses.\
 > Is it finished? Pretty much. Is it perfect? Probably not. Found a bug? Open an issue. Have a wild idea? Open a PR.\
