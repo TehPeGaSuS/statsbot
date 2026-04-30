@@ -81,6 +81,23 @@ class IRCConnector:
         self.reload_queue  = None        # set by main.py after construction
         self._reclaim_nick = False       # waiting to reclaim primary nick after ghost
 
+        # ── Channel join retry tracking ─────────────────────────────────
+        # Per-channel attempt count (lowercased channel name -> int)
+        self._join_attempts: dict = {}
+        # Channels we have successfully joined (lowercased)
+        self._joined_channels: set = set()
+        # Pending retry asyncio tasks (lowercased channel -> Task)
+        self._join_retry_tasks: dict = {}
+        # Config: max attempts and delay between them
+        self.join_retries = int(
+            network_cfg.get("join_retries",
+                            (config.get("bot", {}) or {}).get("join_retries", 5))
+        )
+        self.join_retry_delay = float(
+            network_cfg.get("join_retry_delay",
+                            (config.get("bot", {}) or {}).get("join_retry_delay", 30))
+        )
+
     # ─── Send ─────────────────────────────────────────────────────────────
 
     def send_raw(self, line: str):
@@ -197,9 +214,9 @@ class IRCConnector:
             # NickServ auth (if not using SASL)
             if not self._sasl_authed:
                 self._do_nickserv_auth()
-            # Join channels
+            # Join channels (with retry tracking)
             for chan in self.channels:
-                self.send_raw(f"JOIN {chan}")
+                self._attempt_join(chan)
             # on_connect commands fire immediately — independent of auth
             self._run_on_connect()
 
@@ -300,11 +317,29 @@ class IRCConnector:
             if nick == self._current_nick:
                 if channel not in self._channel_members:
                     self._channel_members[channel] = set()
+                # Mark channel as successfully joined and cancel any pending retry
+                self._mark_join_success(channel)
             else:
                 self._channel_members.setdefault(channel, set()).add(nick)
                 if host:
                     self._nick_hosts[nick.lower()] = host
                 self.sensors.on_join(nick, host, channel)
+
+        elif command in ("471", "473", "474", "475", "477", "437"):
+            # Join error numerics:
+            #   471 ERR_CHANNELISFULL    (+l)
+            #   473 ERR_INVITEONLYCHAN   (+i)
+            #   474 ERR_BANNEDFROMCHAN   (banned)
+            #   475 ERR_BADCHANNELKEY    (+k)
+            #   477 ERR_NEEDREGGEDNICK   (need registration)
+            #   437 ERR_UNAVAILRESOURCE  (DALnet temp unavailable / nick or chan)
+            # params: [me, channel, :reason]
+            err_chan = params[1] if len(params) > 1 else ""
+            reason = params[2] if len(params) > 2 else command
+            # 437 also fires for nicks during registration — only treat as a
+            # join error when the target looks like a channel.
+            if err_chan and err_chan[:1] in "#&!+":
+                self._schedule_join_retry(err_chan, command, reason)
 
         elif command == "PART":
             nick = nick_from_prefix(prefix)
@@ -449,16 +484,96 @@ class IRCConnector:
             log.info(f"[on_connect] sending: {raw!r}")
             self.send_raw(raw)
 
+    # ─── Channel join with retry ──────────────────────────────────────
+
+    def _attempt_join(self, channel: str, key: Optional[str] = None):
+        """Send a JOIN and bump the attempt counter for this channel."""
+        ch_l = channel.lower()
+        self._join_attempts[ch_l] = self._join_attempts.get(ch_l, 0) + 1
+        attempt = self._join_attempts[ch_l]
+        if key:
+            self.send_raw(f"JOIN {channel} {key}")
+        else:
+            self.send_raw(f"JOIN {channel}")
+        log.info(
+            f"JOIN {channel} (attempt {attempt}/{self.join_retries})"
+        )
+
+    def _mark_join_success(self, channel: str):
+        """Channel joined successfully — clear attempt state and pending retry."""
+        ch_l = channel.lower()
+        self._joined_channels.add(ch_l)
+        self._join_attempts.pop(ch_l, None)
+        task = self._join_retry_tasks.pop(ch_l, None)
+        if task and not task.done():
+            task.cancel()
+        log.info(f"Joined {channel} successfully.")
+
+    def _schedule_join_retry(self, channel: str, code: str, reason: str):
+        """Schedule a delayed retry for a failed JOIN, up to join_retries."""
+        ch_l = channel.lower()
+        if ch_l in self._joined_channels:
+            return
+        attempts = self._join_attempts.get(ch_l, 0)
+        if attempts >= self.join_retries:
+            log.warning(
+                f"JOIN {channel} failed ({code} {reason}) — "
+                f"giving up after {attempts} attempts."
+            )
+            return
+        # Avoid stacking multiple pending retries for the same channel
+        existing = self._join_retry_tasks.get(ch_l)
+        if existing and not existing.done():
+            return
+        log.warning(
+            f"JOIN {channel} failed ({code} {reason}) — "
+            f"retrying in {self.join_retry_delay}s "
+            f"(attempt {attempts}/{self.join_retries} done)."
+        )
+        try:
+            loop = asyncio.get_running_loop()
+        except RuntimeError:
+            return
+        self._join_retry_tasks[ch_l] = loop.create_task(
+            self._delayed_join_retry(channel)
+        )
+
+    async def _delayed_join_retry(self, channel: str):
+        try:
+            await asyncio.sleep(self.join_retry_delay)
+        except asyncio.CancelledError:
+            return
+        ch_l = channel.lower()
+        self._join_retry_tasks.pop(ch_l, None)
+        if ch_l in self._joined_channels:
+            return
+        if not self._connected:
+            return
+        self._attempt_join(channel)
+
     async def join_channel(self, channel: str):
         """JOIN a channel live and add it to the tracked list."""
         if channel not in self.channels:
             self.channels.append(channel)
-        self.send_raw(f"JOIN {channel}")
+        # Reset retry state for a fresh manual join
+        ch_l = channel.lower()
+        self._joined_channels.discard(ch_l)
+        self._join_attempts.pop(ch_l, None)
+        task = self._join_retry_tasks.pop(ch_l, None)
+        if task and not task.done():
+            task.cancel()
+        self._attempt_join(channel)
 
     async def part_channel(self, channel: str):
         """PART a channel live and remove it from the tracked list."""
         if channel in self.channels:
             self.channels.remove(channel)
+        ch_l = channel.lower()
+        self._joined_channels.discard(ch_l)
+        self._join_attempts.pop(ch_l, None)
+        task = self._join_retry_tasks.pop(ch_l, None)
+        if task and not task.done():
+            task.cancel()
         self.send_raw(f"PART {channel} :Removed by admin")
 
     async def disconnect(self):
