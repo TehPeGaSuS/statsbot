@@ -240,10 +240,16 @@ def t(msgid: str, lang: str = DEFAULT, **kwargs) -> str:
     return raw
 
 
-def tn(singular: str, plural: str, count: int, lang: str = DEFAULT, **kwargs) -> str:
-    """Translate a plural msgid. Picks the correct form for `count` according
+def tn(singular: str, plural: str, n: int, lang: str = DEFAULT, **kwargs) -> str:
+    """Translate a plural msgid. Picks the correct form for `n` according
     to the target language's Plural-Forms rule. Falls back to English
-    singular/plural when no translation is present."""
+    singular/plural when no translation is present.
+
+    `n` is the numeric value used *only* for plural-form selection.
+    Pass ``count=`` as a keyword argument to override what ``{count}``
+    renders as in the format string (e.g. a bold-wrapped string).
+    When ``count=`` is not supplied, ``{count}`` defaults to ``n``.
+    """
     cat = _get_catalogue(lang)
     entry = cat.get(singular) or cat.get(plural)
     plural_fn = _plural_funcs.get(lang, _default_plural)
@@ -254,9 +260,9 @@ def tn(singular: str, plural: str, count: int, lang: str = DEFAULT, **kwargs) ->
         _, forms = entry
         if forms:
             try:
-                idx = plural_fn(count)
+                idx = plural_fn(n)
                 if idx < 0 or idx >= nplurals:
-                    idx = _default_plural(count)
+                    idx = _default_plural(n)
                 if 0 <= idx < len(forms) and forms[idx]:
                     raw = forms[idx]
             except Exception:
@@ -264,12 +270,13 @@ def tn(singular: str, plural: str, count: int, lang: str = DEFAULT, **kwargs) ->
 
     if not raw:
         # English fallback: simple Germanic rule
-        raw = singular if count == 1 else plural
+        raw = singular if n == 1 else plural
 
     raw = _unescape(raw)
-    # Always make `count` available to the format string
+    # `count` in the format string defaults to the numeric selector `n`,
+    # but callers may pass count= explicitly (e.g. a bold-wrapped value).
     fmt_kwargs = dict(kwargs)
-    fmt_kwargs.setdefault("count", count)
+    fmt_kwargs.setdefault("count", n)
     try:
         return raw.format(**fmt_kwargs)
     except (KeyError, IndexError):
