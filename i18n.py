@@ -1,36 +1,37 @@
 """
 i18n.py — lightweight PO file loader and translator.
 
+Follows the Anope/gettext convention: msgid is the English string itself.
+en_US.po has empty msgstr for every entry — t() returns the msgid as the
+English fallback when msgstr is empty or the key is missing.
+
 Usage:
     from i18n import t, get_lang
 
-    lang = get_lang(network, channel)   # looks up channel_config DB
-    t("section_big_numbers", lang)      # -> "Big numbers"
-    t("bignums_questions", lang,        # -> "Is PeGaSuS a little bit..."
-      nick="PeGaSuS", pct="27.3")
+    lang = get_lang(network, channel)
+    t("Big numbers", lang)
+    t("{nick} is a very aggressive person. They attacked others {count} times.",
+      lang, nick="PeGaSuS", count=3)
 
-Falls back to en_US for any missing translation.
-PO files live in locale/<lang>.po  (e.g. locale/pt_PT.po)
+Falls back to msgid (the English string) for any missing translation.
+PO files live in locale/<lang>.po
 """
 
 import os
 import re
 import logging
-from typing import Dict, Optional
+from typing import Dict
 
 log = logging.getLogger("i18n")
 
 SUPPORTED = ("en_US", "pt_PT", "fr_FR", "it_IT")
 DEFAULT   = "en_US"
 
-# Cache: {lang: {msgid: msgstr}}
 _catalogues: Dict[str, Dict[str, str]] = {}
-
 _LOCALE_DIR = os.path.join(os.path.dirname(__file__), "locale")
 
 
 def _load(lang: str) -> Dict[str, str]:
-    """Parse a .po file and return {msgid: msgstr}."""
     path = os.path.join(_LOCALE_DIR, f"{lang}.po")
     if not os.path.exists(path):
         log.warning(f"i18n: locale file not found: {path}")
@@ -42,19 +43,19 @@ def _load(lang: str) -> Dict[str, str]:
         for raw in f:
             line = raw.rstrip("\n")
             if line.startswith("msgid "):
-                msgid = re.match(r'^msgid "(.*)"\s*$', line)
-                msgid = msgid.group(1) if msgid else ""
+                m = re.match(r'^msgid "(.*)"$', line)
+                msgid = m.group(1) if m else ""
                 in_msgid = True; in_msgstr = False
             elif line.startswith("msgstr "):
-                msgstr = re.match(r'^msgstr "(.*)"\s*$', line)
-                msgstr = msgstr.group(1) if msgstr else ""
+                m = re.match(r'^msgstr "(.*)"$', line)
+                msgstr = m.group(1) if m else ""
                 in_msgstr = True; in_msgid = False
             elif line.startswith('"') and in_msgid:
-                cont = re.match(r'^"(.*)"\s*$', line)
-                if cont: msgid += cont.group(1)
+                m = re.match(r'^"(.*)"$', line)
+                if m: msgid += m.group(1)
             elif line.startswith('"') and in_msgstr:
-                cont = re.match(r'^"(.*)"\s*$', line)
-                if cont: msgstr += cont.group(1)
+                m = re.match(r'^"(.*)"$', line)
+                if m: msgstr += m.group(1)
             elif line.strip() == "":
                 if msgid:
                     catalogue[msgid] = msgstr
@@ -72,12 +73,10 @@ def _get_catalogue(lang: str) -> Dict[str, str]:
 
 
 def reload_catalogues():
-    """Force-reload all cached catalogues (e.g. after editing PO files)."""
     _catalogues.clear()
 
 
 def get_lang(network: str, channel: str) -> str:
-    """Look up the language configured for this channel. Falls back to en_US."""
     try:
         from database.models import get_conn
         with get_conn() as conn:
@@ -93,7 +92,6 @@ def get_lang(network: str, channel: str) -> str:
 
 
 def set_lang(network: str, channel: str, lang: str) -> bool:
-    """Persist language choice for a channel. Returns False if lang unsupported."""
     if lang not in SUPPORTED:
         return False
     try:
@@ -112,55 +110,39 @@ def set_lang(network: str, channel: str, lang: str) -> bool:
 
 def t(msgid: str, lang: str = DEFAULT, **kwargs) -> str:
     """
-    Translate msgid to lang, interpolating any kwargs.
-    Falls back to en_US if translation missing.
-    kwargs values that are bold-wrapped get <b>value</b> automatically
-    if the key ends with '_b' (e.g. nick_b="PeGaSuS" -> <b>PeGaSuS</b>).
+    Translate msgid (the English string) to lang.
+    Falls back to msgid when msgstr is empty or missing.
     """
     cat = _get_catalogue(lang)
-    en  = _get_catalogue(DEFAULT)
-    raw = cat.get(msgid) or en.get(msgid) or msgid
+    raw = cat.get(msgid, "")
     if not raw:
-        return msgid
-    # Unescape PO escape sequences
+        raw = msgid
     raw = raw.replace("\\n", "\n").replace('\\"', '"').replace("\\\\", "\\")
     if kwargs:
-        # Bold-wrap _b kwargs
-        fmt = {}
-        for k, v in kwargs.items():
-            if k.endswith("_b"):
-                fmt[k[:-2]] = f"<b>{v}</b>"
-            else:
-                fmt[k] = v
         try:
-            return raw.format(**fmt)
+            return raw.format(**kwargs)
         except KeyError:
             return raw
     return raw
 
-# Weekday and month name tables per language
-_WEEKDAYS = {
-    "en_US": ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"],
-    "pt_PT": ["segunda-feira","terça-feira","quarta-feira","quinta-feira","sexta-feira","sábado","domingo"],
-    "fr_FR": ["lundi","mardi","mercredi","jeudi","vendredi","samedi","dimanche"],
-    "it_IT": ["lunedì","martedì","mercoledì","giovedì","venerdì","sabato","domenica"],
-}
-_MONTHS = {
-    "en_US": ["January","February","March","April","May","June",
-              "July","August","September","October","November","December"],
-    "pt_PT": ["janeiro","fevereiro","março","abril","maio","junho",
-              "julho","agosto","setembro","outubro","novembro","dezembro"],
-    "fr_FR": ["janvier","février","mars","avril","mai","juin",
-              "juillet","août","septembre","octobre","novembre","décembre"],
-    "it_IT": ["gennaio","febbraio","marzo","aprile","maggio","giugno",
-              "luglio","agosto","settembre","ottobre","novembre","dicembre"],
-}
+
+# ── Date/time helpers ─────────────────────────────────────────────────────────
+
+_EN_WEEKDAYS = "Monday,Tuesday,Wednesday,Thursday,Friday,Saturday,Sunday"
+_EN_MONTHS   = "January,February,March,April,May,June,July,August,September,October,November,December"
+
+
+def _get_list(msgid: str, lang: str) -> list:
+    cat = _get_catalogue(lang)
+    raw = cat.get(msgid, "")
+    if not raw:
+        raw = msgid  # msgid is itself the English comma-separated list
+    return [s.strip() for s in raw.split(",")]
 
 
 def format_date_long(dt, lang: str = DEFAULT) -> str:
-    """Format a datetime as 'Weekday DD Month YYYY - HH:MM:SS' in the given language."""
-    weekdays = _WEEKDAYS.get(lang, _WEEKDAYS[DEFAULT])
-    months   = _MONTHS.get(lang, _MONTHS[DEFAULT])
+    weekdays = _get_list(_EN_WEEKDAYS, lang)
+    months   = _get_list(_EN_MONTHS, lang)
     wd  = weekdays[dt.weekday()]
     mon = months[dt.month - 1]
     return f"{wd} {dt.day:02d} {mon} {dt.year} - {dt.strftime('%H:%M:%S')}"

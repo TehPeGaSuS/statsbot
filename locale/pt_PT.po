@@ -5,414 +5,421 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Language: pt_PT\n"
 
-msgid "time_today"
+# ── Date/time names ──────────────────────────────────────────────────────
+msgid "Monday,Tuesday,Wednesday,Thursday,Friday,Saturday,Sunday"
+msgstr "segunda-feira,terça-feira,quarta-feira,quinta-feira,sexta-feira,sábado,domingo"
+
+msgid "January,February,March,April,May,June,July,August,September,October,November,December"
+msgstr "janeiro,fevereiro,março,abril,maio,junho,julho,agosto,setembro,outubro,novembro,dezembro"
+
+msgid "today"
 msgstr "hoje"
 
-msgid "time_yesterday"
+msgid "yesterday"
 msgstr "ontem"
 
-msgid "time_n_days_ago"
+msgid "{n} days ago"
 msgstr "há {n} dias"
 
-msgid "time_today_at"
+msgid "today at {time}"
 msgstr "hoje às {time}"
 
-msgid "time_yesterday_at"
+msgid "yesterday at {time}"
 msgstr "ontem às {time}"
 
-msgid "time_n_days_ago_at"
+msgid "{n} days ago at {time}"
 msgstr "há {n} dias às {time}"
 
-msgid "page_generated_on"
+msgid "Statistics generated on {date}"
 msgstr "Estatísticas geradas em {date}"
 
-msgid "page_reporting_period"
+msgid "During this {n}-day reporting period, a total of {total} different nicks were represented on {channel}."
 msgstr "Durante este período de {n} dias, um total de {total} nicks diferentes estiveram representados em {channel}."
 
-msgid "page_reporting_alltime"
+msgid "All-time statistics for {channel} — {total} different nicks represented."
 msgstr "Estatísticas gerais de {channel} — {total} nicks diferentes representados."
 
-msgid "tab_alltime"
+msgid "all-time"
 msgstr "tudo"
 
-msgid "tab_today"
+msgid "today"
 msgstr "hoje"
 
-msgid "tab_week"
+msgid "this week"
 msgstr "esta semana"
 
-msgid "tab_month"
+msgid "this month"
 msgstr "este mês"
 
-msgid "summary_users"
+msgid "users"
 msgstr "utilizadores"
 
-msgid "summary_peak_users"
+msgid "peak users"
 msgstr "pico de utilizadores"
 
-msgid "summary_top_talker"
+msgid "top talker"
 msgstr "mais falador"
 
-msgid "summary_happiest"
+msgid "happiest :)"
 msgstr "mais feliz :)"
 
-msgid "summary_saddest"
+msgid "saddest :("
 msgstr "mais triste :("
 
-msgid "summary_most_online"
+msgid "most online"
 msgstr "mais tempo online"
 
-msgid "section_active_times"
+msgid "Most active times"
 msgstr "Horários mais activos"
 
-msgid "section_active_nicks"
+msgid "Most active nicks"
 msgstr "Nicks mais activos"
 
-msgid "section_big_numbers"
+msgid "Big numbers"
 msgstr "Números grandes"
 
-msgid "section_active_by_hours"
+msgid "Most active nicks by hours"
 msgstr "Nicks mais activos por horas"
 
-msgid "section_most_used_words"
+msgid "Most used words"
 msgstr "Palavras mais usadas"
 
-msgid "section_most_ref_nicks"
+msgid "Most referenced nicks"
 msgstr "Nicks mais referenciados"
 
-msgid "section_smileys"
+msgid "Smileys :-)"
 msgstr "Smileys :-)"
 
-msgid "section_karma"
+msgid "Karma"
 msgstr "Karma"
 
-msgid "section_most_ref_urls"
+msgid "Most referenced URLs"
 msgstr "URLs mais referenciados"
 
-msgid "section_latest_topics"
+msgid "Latest Topics"
 msgstr "Últimos tópicos"
 
-msgid "section_other_numbers"
+msgid "Other interesting numbers"
 msgstr "Outros números interessantes"
 
-msgid "col_number_of_lines"
+msgid "Number of lines"
 msgstr "Número de linhas"
 
-msgid "col_number_of_words"
+msgid "Number of Words"
 msgstr "Número de palavras"
 
-msgid "col_words_per_line"
+msgid "Words per line"
 msgstr "Palavras por linha"
 
-msgid "col_chars_per_line"
+msgid "Chars per line"
 msgstr "Caracteres por linha"
 
-msgid "col_when"
+msgid "When?"
 msgstr "Quando?"
 
-msgid "col_last_seen"
+msgid "Last seen"
 msgstr "Visto por último"
 
-msgid "col_random_quote"
+msgid "Random quote"
 msgstr "Citação aleatória"
 
-msgid "col_word"
+msgid "Word"
 msgstr "Palavra"
 
-msgid "col_number_of_uses"
+msgid "Number of Uses"
 msgstr "Número de usos"
 
-msgid "col_last_used_by"
+msgid "Last Used by"
 msgstr "Último uso por"
 
-msgid "col_nick"
+msgid "Nick"
 msgstr "Nick"
 
-msgid "col_last_by"
+msgid "Last by"
 msgstr "Último por"
 
-msgid "col_smiley"
+msgid "Smiley"
 msgstr "Smiley"
 
-msgid "col_uses"
+msgid "Uses"
 msgstr "Usos"
 
-msgid "col_top_user"
+msgid "Top user"
 msgstr "Utilizador principal"
 
-msgid "col_url"
+msgid "URL"
 msgstr "URL"
 
-msgid "col_score"
+msgid "Score"
 msgstr "Pontuação"
 
-msgid "also_active"
+msgid "These didn't make it to the top:"
 msgstr "Estes não chegaram ao topo:"
 
-msgid "by_the_way"
+msgid "By the way, there were {n} other nicks."
 msgstr "Além disso, havia {n} outros nicks."
 
-msgid "legend_band_0_5"
+msgid "0-5"
 msgstr "0-5"
 
-msgid "legend_band_6_11"
+msgid "6-11"
 msgstr "6-11"
 
-msgid "legend_band_12_17"
+msgid "12-17"
 msgstr "12-17"
 
-msgid "legend_band_18_23"
+msgid "18-23"
 msgstr "18-23"
 
-msgid "bignums_questions"
+msgid "Is {nick} a little bit slower than the rest, or just asking too many questions?  {pct}% lines contained a question!"
 msgstr "{nick} é um pouco mais lento que os outros, ou está apenas a fazer demasiadas perguntas?  {pct}% das linhas continham uma pergunta!"
 
-msgid "bignums_questions_sub"
+msgid "{nick} didn't know that much either. {pct}% of their lines were questions."
 msgstr "{nick} também não sabia muito. {pct}% das suas linhas eram perguntas."
 
-msgid "bignums_caps_loud"
+msgid "The loudest one was {nick}, who yelled {pct}% of the time!"
 msgstr "Quem mais barulho fez foi {nick}, que gritou {pct}% do tempo!"
 
-msgid "bignums_caps_loud_sub"
+msgid "Another old yeller was {nick}, who shouted {pct}% of the time!"
 msgstr "Outro/a gritalhão/ã foi {nick}, que berrou {pct}% do tempo!"
 
-msgid "bignums_caps_shift"
+msgid "It seems that {nick}'s shift-key is hanging: {pct}% of the time they wrote UPPERCASE."
 msgstr "Parece que a tecla Shift de {nick} está encravada: {pct}% do tempo escreveu em MAIÚSCULAS."
 
-msgid "bignums_caps_shift_sub"
+msgid "{nick} just forgot to deactivate their Caps-Lock. They wrote UPPERCASE {pct}% of the time."
 msgstr "{nick} esqueceu-se de desactivar o Caps-Lock. Escreveu em MAIÚSCULAS {pct}% do tempo."
 
-msgid "bignums_violent"
+msgid "{nick} is a very aggressive person. They attacked others {count} time."
 msgstr "{nick} é uma pessoa muito agressiva. Atacou outros {count} vez."
 
-msgid "bignums_violent_plural"
+msgid "{nick} is a very aggressive person. They attacked others {count} times."
 msgstr "{nick} é uma pessoa muito agressiva. Atacou outros {count} vezes."
 
-msgid "bignums_violent_sub"
+msgid "{nick} can't control their aggressions, either. They picked on others {count} times."
 msgstr "{nick} também não consegue controlar as agressões. Atacou outros {count} vezes."
 
-msgid "bignums_violent_nobody"
+msgid "Nobody beat anyone up. Everybody was friendly."
 msgstr "Ninguém bateu em ninguém. Toda a gente foi simpática."
 
-msgid "bignums_attacked"
+msgid "Poor {nick}, nobody likes them. They were attacked {count} time."
 msgstr "Coitado/a de {nick}, ninguém gosta. Foi atacado/a {count} vez."
 
-msgid "bignums_attacked_plural"
+msgid "Poor {nick}, nobody likes them. They were attacked {count} times."
 msgstr "Coitado/a de {nick}, ninguém gosta. Foi atacado/a {count} vezes."
 
-msgid "bignums_attacked_sub"
+msgid "{nick} seems to be unliked too. They got beaten {count} times."
 msgstr "{nick} também não é muito popular. Apanhou {count} vezes."
 
-msgid "for_example"
+msgid "For example, like this:"
 msgstr "Por exemplo, assim:"
 
-msgid "bignums_happy"
+msgid "{nick} brings happiness to the world. {pct}% of their lines contained smiling faces. :)"
 msgstr "{nick} traz felicidade ao mundo. {pct}% das suas linhas continham caras sorridentes. :)"
 
-msgid "bignums_happy_sub"
+msgid "{nick} isn't a sad person either, smiling {pct}% of the time."
 msgstr "{nick} também não é uma pessoa triste, a sorrir {pct}% do tempo."
 
-msgid "bignums_happy_nobody"
+msgid "Nobody smiles in this channel! Cheer up, everyone."
 msgstr "Ninguém sorri neste canal! Animem-se."
 
-msgid "bignums_sad"
+msgid "{nick} seems to be sad at the moment: {pct}% of their lines contained sad faces. :("
 msgstr "{nick} parece estar triste neste momento: {pct}% das suas linhas continham caras tristes. :("
 
-msgid "bignums_sad_sub"
+msgid "{nick} is also a sad person, crying {pct}% of the time."
 msgstr "{nick} também é uma pessoa triste, a chorar {pct}% do tempo."
 
-msgid "bignums_sad_nobody"
+msgid "Nobody is sad in this channel! What a happy channel. :-)"
 msgstr "Ninguém está triste neste canal! Que canal feliz. :-)"
 
-msgid "bignums_longest_lines"
+msgid "{nick} wrote the longest lines, averaging {avg} letters per line."
 msgstr "{nick} escreveu as linhas mais longas, com uma média de {avg} letras por linha."
 
-msgid "bignums_longest_lines_sub"
+msgid "{channel} average was {avg} letters per line."
 msgstr "A média do {channel} foi de {avg} letras por linha."
 
-msgid "bignums_shortest_lines"
+msgid "{nick} wrote the shortest lines, averaging {avg} characters per line."
 msgstr "{nick} escreveu as linhas mais curtas, com uma média de {avg} caracteres por linha."
 
-msgid "bignums_shortest_lines_sub"
+msgid "{nick} was tight-lipped, too, averaging {avg} characters."
 msgstr "{nick} também foi lacónico/a, com uma média de {avg} caracteres."
 
-msgid "bignums_words_total"
+msgid "{nick} spoke a total of {count} words!"
 msgstr "{nick} disse um total de {count} palavras!"
 
-msgid "bignums_words_total_sub"
+msgid "{nick}'s faithful follower, {nick2}, didn't speak so much: {count} words."
 msgstr "O seguidor fiel de {nick}, {nick2}, não falou tanto: {count} palavras."
 
-msgid "bignums_wpl"
+msgid "{nick} wrote an average of {avg} words per line."
 msgstr "{nick} escreveu uma média de {avg} palavras por linha."
 
-msgid "bignums_wpl_sub"
+msgid "Channel average was {avg} words per line."
 msgstr "A média do canal foi de {avg} palavras por linha."
 
-msgid "other_kicked"
+msgid "{nick} wasn't very popular, getting kicked {count} time!"
 msgstr "{nick} não era muito popular, levando {count} kick!"
 
-msgid "other_kicked_plural"
+msgid "{nick} wasn't very popular, getting kicked {count} times!"
 msgstr "{nick} não era muito popular, levando {count} kicks!"
 
-msgid "other_kicked_sub"
+msgid "{nick} seemed to be hated too: {count} kicks were received."
 msgstr "{nick} também parecia ser odiado/a: recebeu {count} kicks."
 
-msgid "other_kicks_given"
+msgid "{nick} is either insane or just a fair op, kicking a total of {count} person!"
 msgstr "{nick} está louco/a ou é um op justo, dando kick a {count} pessoa!"
 
-msgid "other_kicks_given_plural"
+msgid "{nick} is either insane or just a fair op, kicking a total of {count} people!"
 msgstr "{nick} está louco/a ou é um op justo, dando kick a {count} pessoas!"
 
-msgid "other_kicks_given_sub"
+msgid "{nick}'s faithful follower, {nick2}, kicked about {count} people."
 msgstr "O seguidor fiel de {nick}, {nick2}, deu kick a cerca de {count} pessoas."
 
-msgid "other_ops_given"
+msgid "{nick} donated {count} op in the channel..."
 msgstr "{nick} doou {count} op no canal..."
 
-msgid "other_ops_given_plural"
+msgid "{nick} donated {count} ops in the channel..."
 msgstr "{nick} doou {count} ops no canal..."
 
-msgid "other_ops_given_sub"
+msgid "{nick} was also generous with ops, giving {count} times."
 msgstr "{nick} também foi generoso com ops, dando {count} vezes."
 
-msgid "other_ops_none_given"
+msgid "Strange, no op was given on {channel}!"
 msgstr "Estranho, nenhum op foi dado em {channel}!"
 
-msgid "other_ops_taken"
+msgid "{nick} is the channel's deop machine, removing ops from {count} person."
 msgstr "{nick} é a máquina de deop do canal, removendo ops de {count} pessoa."
 
-msgid "other_ops_taken_plural"
+msgid "{nick} is the channel's deop machine, removing ops from {count} people."
 msgstr "{nick} é a máquina de deop do canal, removendo ops de {count} pessoas."
 
-msgid "other_ops_taken_sub"
+msgid "{nick} also took ops away {count} times."
 msgstr "{nick} também tirou ops {count} vezes."
 
-msgid "other_ops_none_taken"
+msgid "Wow, no op was taken on {channel}!"
 msgstr "Uau, nenhum op foi retirado em {channel}!"
 
-msgid "other_halfops_given"
+msgid "{nick} donated {count} halfop in the channel..."
 msgstr "{nick} doou {count} halfop no canal..."
 
-msgid "other_halfops_given_plural"
+msgid "{nick} donated {count} halfops in the channel..."
 msgstr "{nick} doou {count} halfops no canal..."
 
-msgid "other_halfops_given_sub"
+msgid "{nick} also gave halfops {count} times."
 msgstr "{nick} também deu halfops {count} vezes."
 
-msgid "other_halfops_none_given"
+msgid "Strange, no halfop was given on {channel}!"
 msgstr "Estranho, nenhum halfop foi dado em {channel}!"
 
-msgid "other_halfops_taken"
+msgid "{nick} took halfops away {count} time."
 msgstr "{nick} retirou halfops {count} vez."
 
-msgid "other_halfops_taken_plural"
+msgid "{nick} took halfops away {count} times."
 msgstr "{nick} retirou halfops {count} vezes."
 
-msgid "other_halfops_none_taken"
+msgid "Wow, no halfop was taken on {channel}!"
 msgstr "Uau, nenhum halfop foi retirado em {channel}!"
 
-msgid "other_voice_given"
+msgid "{nick} is very generous with voice, handing it out {count} time."
 msgstr "{nick} é muito generoso com voice, dando {count} vez."
 
-msgid "other_voice_given_plural"
+msgid "{nick} is very generous with voice, handing it out {count} times."
 msgstr "{nick} é muito generoso com voice, dando {count} vezes."
 
-msgid "other_voice_given_sub"
+msgid "{nick} was also quite vocal about giving voice, {count} times."
 msgstr "{nick} também foi bastante vocal a dar voice, {count} vezes."
 
-msgid "other_voice_none_given"
+msgid "Strange, no voices were given on {channel}!"
 msgstr "Estranho, nenhum voice foi dado em {channel}!"
 
-msgid "other_voice_taken"
+msgid "{nick} took voice away {count} time — someone had to."
 msgstr "{nick} retirou voice {count} vez — alguém tinha de o fazer."
 
-msgid "other_voice_taken_plural"
+msgid "{nick} took voice away {count} times — someone had to."
 msgstr "{nick} retirou voice {count} vezes — alguém tinha de o fazer."
 
-msgid "other_voice_taken_sub"
+msgid "{nick} also silenced people {count} times."
 msgstr "{nick} também silenciou pessoas {count} vezes."
 
-msgid "other_voice_none_taken"
+msgid "No voices were taken on {channel}!"
 msgstr "Nenhum voice foi retirado em {channel}!"
 
-msgid "other_actions"
+msgid "{nick} always lets us know what they're doing: {count} action!"
 msgstr "{nick} faz questão de nos dizer o que está a fazer: {count} acção!"
 
-msgid "other_actions_plural"
+msgid "{nick} always lets us know what they're doing: {count} actions!"
 msgstr "{nick} faz questão de nos dizer o que está a fazer: {count} acções!"
 
-msgid "other_actions_sub"
+msgid "Also, {nick} tells us what's up with {count} actions."
 msgstr "Além disso, {nick} partilhou o que se passa com {count} acções."
 
-msgid "other_actions_nobody"
+msgid "No actions in this channel!"
 msgstr "Nenhuma acção neste canal!"
 
-msgid "other_monologues"
+msgid "{nick} talks to themselves a lot. They wrote over 5 lines in a row {count} time!"
 msgstr "{nick} fala muito sozinho/a. Escreveu mais de 5 linhas seguidas {count} vez!"
 
-msgid "other_monologues_plural"
+msgid "{nick} talks to themselves a lot. They wrote over 5 lines in a row {count} times!"
 msgstr "{nick} fala muito sozinho/a. Escreveu mais de 5 linhas seguidas {count} vezes!"
 
-msgid "other_monologues_sub"
+msgid "Another lonely one was {nick}, who managed to hit {count} times."
 msgstr "Outra pessoa solitária foi {nick}, que conseguiu {count} vezes."
 
-msgid "other_joins"
+msgid "{nick} couldn't decide whether to stay or go. {count} join during this period!"
 msgstr "{nick} não conseguia decidir se ficava ou ia. {count} entrada durante este período!"
 
-msgid "other_joins_plural"
+msgid "{nick} couldn't decide whether to stay or go. {count} joins during this period!"
 msgstr "{nick} não conseguia decidir se ficava ou ia. {count} entradas durante este período!"
 
-msgid "other_foul"
+msgid "{nick} has quite a potty mouth. {pct}% of their words were foul language."
 msgstr "{nick} tem uma boca suja. {pct}% das suas palavras eram linguagem imprópria."
 
-msgid "other_foul_sub"
+msgid "{nick} also makes sailors blush, {pct}% of the time."
 msgstr "{nick} também faz corar os marinheiros, {pct}% do tempo."
 
-msgid "other_foul_nobody"
+msgid "Nobody is foul-mouthed here! Remarkable."
 msgstr "Ninguém usa linguagem imprópria aqui! Notável."
 
-msgid "topics_set_count"
+msgid "The topic was set {count} time."
 msgstr "O tópico foi definido {count} vez."
 
-msgid "topics_set_count_plural"
+msgid "The topic was set {count} times."
 msgstr "O tópico foi definido {count} vezes."
 
-msgid "legend_total_lines"
+msgid "Total lines"
 msgstr "Total de linhas"
 
-msgid "legend_unique_nicks"
+msgid "Unique nicks"
 msgstr "Nicks únicos"
 
-msgid "legend_avg_wpl"
+msgid "Avg words/line"
 msgstr "Média palavras/linha"
 
-msgid "legend_avg_cpl"
+msgid "Avg chars/line"
 msgstr "Média caracteres/linha"
 
-msgid "legend_topics_set"
+msgid "Topics set"
 msgstr "Tópicos definidos"
 
-msgid "legend_topics_set_n"
+msgid "{n} times"
 msgstr "{n} vezes"
 
-msgid "legend_generated_by"
+msgid "Stats for {channel} on {network}{by} — generated {date} by"
 msgstr "Estatísticas de {channel} em {network}{by} — geradas em {date} por"
 
-msgid "cmd_stats_url"
+msgid "Stats for {channel}: {url}"
 msgstr "Estatísticas de {channel}: {url}"
 
-msgid "cmd_stats_no_stats"
+msgid "No stats yet."
 msgstr "Ainda não há estatísticas."
 
-msgid "cmd_top_result"
+msgid "{channel} top {n}: {list}"
 msgstr "{channel} top {n}: {list}"
 
-msgid "cmd_quote_none_for_nick"
+msgid "No quotes for {nick}."
 msgstr "Sem citações de {nick}."
 
-msgid "cmd_quote_none"
+msgid "No quotes yet."
 msgstr "Ainda não há citações."
 
-msgid "cmd_quote_result"
-msgstr "Citação aleatória de {nick}: \"{quote}\""
+msgid "{nick}'s random quote: \\\"{quote}\\\""
+msgstr "Citação aleatória de {nick}: \\\"{quote}\\\""
 
