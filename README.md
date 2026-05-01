@@ -33,10 +33,11 @@ live web dashboard — no log files, no cron jobs, no static HTML generation.
 | Stats periods | One fixed window | All-time, today, week, month |
 | Peak users | ✗ | ✓ with timestamp |
 | Live user count | ✗ | ✓ updates every 30s |
-| Karma (`nick++` / `nick--`) | ✓ | ✓ |
+| Karma (`nick++` / `nick--`) | ✓ ±1 per pair, `nick==` resets | ✓ cumulative, no reset |
 | Op/voice/halfop stats | ✓ | ✓ |
 | Multi-network | ✗ | ✓ |
 | Admin via IRC | ✗ | ✓ via PM commands |
+| Multilingual stats page | ✓ static, per-install | ✓ live, per-channel |
 
 If you already know pisg, the `pisg:` section in `config.yml` uses the same
 option names — `ActiveNicks`, `ShowBigNumbers`, `WordHistory`, etc. — so the
@@ -56,7 +57,7 @@ option names — `ActiveNicks`, `ShowBigNumbers`, `WordHistory`, etc. — so the
   with example lines, smiles %, sad %, line lengths, monologues, words per line
 - **Other interesting numbers** — kicks given/received, most actions, most joins,
   foul language %
-- **Most active by hour** — pisg-style 4-band table (0–5, 6–11, 12–17, 18–23)
+- **Most active by hour** — 4-band table (0–5, 6–11, 12–17, 18–23)
 - **Most used words** — filterable by length and ignore list, with last-used-by nick
 - **Most referenced nicks** — who gets mentioned most in conversation, displayed
   with original casing
@@ -330,8 +331,12 @@ Issues and pull requests are welcome. If you're adding a feature, please:
 - Add a test in the relevant `python -c` style check if possible
 - Update `DOCS.md` if you add or change a config option
 
+Want to add or improve a translation? See **[TRANSLATE.md](TRANSLATE.md)** —
+it covers the rules, the placeholders, and what not to translate, in English,
+Portuguese, French and Italian.
+
 If you're familiar with pisg, feature parity PRs are especially welcome —
-see the "not yet implemented" table below for what's missing.
+see [What's not yet implemented](#whats-not-yet-implemented-vs-pisg) for what's missing.
 
 ## What's not yet implemented vs pisg
 
