@@ -211,7 +211,7 @@ def build_page(network: str, channel: str, period: int, config: dict) -> str:
     def hicell(content, small=None, example=None):
         ex_html = f'<br><span class="small"><b>{t("For example, like this:", lang)}</b><br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{example}</span>' if example else ""
         extra = f'<br><span class="small">{small}</span>' if small else ""
-        h(f'<tr><td class="hicell">{content}{extra}{ex_html}</td></tr>')
+        h(f'<tr><td class="hicell">{content}{ex_html}{extra}</td></tr>')
     # ── Page header ───────────────────────────────────────────────────────────
     h(f"""<!DOCTYPE html>
 <html lang="en">
@@ -941,7 +941,7 @@ b {{ color: var(--cyan); }}
         kt = [r for r in kt if r["value"] > 0]
         if kt:
             _kv = kt[0]["value"]
-            text = tn("{nick} is a sad person, kicked {count} time.", "{nick} is a sad person, kicked {count} times.", _kv, lang, nick=f"<b>{kt[0]['nick']}</b>", count=_kv)
+            text = tn("{nick} wasn't very popular, getting kicked {count} time!", "{nick} wasn't very popular, getting kicked {count} times!", _kv, lang, nick=f"<b>{kt[0]['nick']}</b>", count=_kv)
             sub  = t("{nick} seemed to be hated too: {count} kicks were received.", lang, nick=f"<b>{kt[1]['nick']}</b>", count=kt[1]['value']) if len(kt) > 1 else None
             # Find the most recent kick for this nick for the example line
             _kick_ex = next((k for k in recent_kicks if k["victim"].lower() == kt[0]["nick"].lower()), None)
@@ -961,7 +961,7 @@ b {{ color: var(--cyan); }}
         kg = [r for r in kg if r["value"] > 0]
         if kg:
             _kg0v = kg[0]["value"]
-            text = tn("{nick} is a fierce one, kicking {count} time.", "{nick} is a fierce one, kicking {count} times.", _kg0v, lang, nick=f"<b>{kg[0]['nick']}</b>", count=_kg0v)
+            text = tn("{nick} is either insane or just a fair op, kicking a total of {count} person!", "{nick} is either insane or just a fair op, kicking a total of {count} people!", _kg0v, lang, nick=f"<b>{kg[0]['nick']}</b>", count=_kg0v)
             sub  = t("{nick}'s faithful follower, {nick2}, kicked about {count} people.", lang, nick=kg[0]['nick'], nick2=f"<b>{kg[1]['nick']}</b>", count=kg[1]['value']) if len(kg) > 1 else None
             _bignum_row(text, sub)
 
