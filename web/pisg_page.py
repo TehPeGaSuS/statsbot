@@ -7,7 +7,7 @@ Called from dashboard.py channel_stats route.
 import json
 import logging
 import time
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import List, Dict, Optional
 from i18n import t, get_lang, format_date_long, tn
 
@@ -164,8 +164,10 @@ def build_page(network: str, channel: str, period: int, config: dict) -> str:
     # Checks for a per-network nick override, falls back to bot.nick.
     _net_entry  = next((n for n in config.get("networks", []) if n.get("name") == network), {})
     maintainer  = _net_entry.get("nick") or config.get("bot", {}).get("nick", "")
-    now_str      = datetime.now().strftime("%Y-%m-%d %H:%M")
-    now_long     = format_date_long(datetime.now(), lang)
+    _now_utc     = datetime.now(timezone.utc)
+    now_str      = _now_utc.strftime("%Y-%m-%d %H:%M")
+    now_long     = format_date_long(_now_utc, lang)
+    now_iso      = _now_utc.strftime("%Y-%m-%dT%H:%M:%SZ")
     t_gen        = t("Statistics generated on {date}", lang, date=now_long)
     # Channel switcher — links to sibling channels on same network
     from database.models import get_channels_for_network
@@ -194,7 +196,7 @@ def build_page(network: str, channel: str, period: int, config: dict) -> str:
     if tracking_start:
         from datetime import timedelta
         start_dt  = datetime.fromtimestamp(tracking_start)
-        days_tracked = max(1, (datetime.now() - start_dt).days)
+        days_tracked = max(1, (datetime.now(timezone.utc) - start_dt).days)
         t_period = t("During this {n}-day reporting period, a total of {total} different nicks were represented on {channel}.", lang,
                      n=days_tracked, total=total_users, channel=channel)
     else:
@@ -346,6 +348,13 @@ b {{ color: var(--cyan); }}
 
 /* Word cloud */
 .word-cloud {{ display: flex; flex-wrap: wrap; gap: .35rem; margin-bottom: 1rem; }}
+/* Sortable columns */
+.nick-table th[data-col] {{ cursor: pointer; user-select: none; }}
+.nick-table th[data-col]:hover {{ color: var(--fg); }}
+.nick-table th[data-col]::after {{ content: " ↕"; opacity: .35; font-size: .7rem; }}
+.nick-table th[data-col].sort-asc::after {{ content: " ↑"; opacity: 1; }}
+.nick-table th[data-col].sort-desc::after {{ content: " ↓"; opacity: 1; }}
+
 .word-tag {{ background: var(--bg3); border: 1px solid var(--border); border-radius: 4px;
              padding: .18rem .45rem; font-size: .78rem; color: var(--blue); }}
 .word-tag .wc {{ color: var(--muted); font-size: .72rem; margin-left: .3rem; }}
@@ -430,7 +439,7 @@ b {{ color: var(--cyan); }}
   <h1>{channel} <span style="color:var(--muted);font-size:1rem">on {network}</span>
     <span id="live-count">●</span>
   </h1>
-  <p class="subtitle">{t_gen}</p>
+  <p class="subtitle" data-utc="{now_iso}" data-i18n-gen="{t_gen}"><span class="local-time">{t_gen}</span></p>
   <p class="subtitle">{t_period}</p>
 </div>
 <div class="container">
@@ -477,14 +486,14 @@ b {{ color: var(--cyan); }}
     show_quote    = pisg.get("ShowRandQuote", True)
     show_time     = pisg.get("ShowTime", True)
 
-    h('<div class="tscroll"><table class="nick-table"><thead><tr>')
-    h('<th class="rank">#</th><th>Nick</th>')
-    if show_lines: h(f'<th>{t("Number of lines", lang)}</th>')
-    if show_words: h(f'<th>{t("Number of Words", lang)}</th>')
-    if show_wpl:   h(f'<th>{t("Words per line", lang)}</th>')
-    if show_cpl:   h(f'<th>{t("Chars per line", lang)}</th>')
+    h('<div class="tscroll"><table class="nick-table sortable-table"><thead><tr>')
+    h('<th class="rank">#</th><th data-col="nick">Nick</th>')
+    if show_lines: h(f'<th data-col="num">{t("Number of lines", lang)}</th>')
+    if show_words: h(f'<th data-col="num">{t("Number of Words", lang)}</th>')
+    if show_wpl:   h(f'<th data-col="num">{t("Words per line", lang)}</th>')
+    if show_cpl:   h(f'<th data-col="num">{t("Chars per line", lang)}</th>')
     if show_time:  h(f'<th>{t("When?", lang)}</th>')
-    if show_lastseen: h(f'<th>{t("Last seen", lang)}</th>')
+    if show_lastseen: h(f'<th data-col="num">{t("Last seen", lang)}</th>')
     if show_quote: h(f'<th>{t("Random quote", lang)}</th>')
     h('</tr></thead><tbody>')
 
@@ -496,7 +505,8 @@ b {{ color: var(--cyan); }}
         words = st.get("words", 0)
         wpl   = f"{words/lines:.1f}" if lines else "0"
         cpl   = f"{st.get('letters',0)/lines:.1f}" if lines else "0"
-        last  = _ago(st.get("last_seen", 0), lang)
+        _last_ts = st.get("last_seen", 0)
+        last  = _ago(_last_ts, lang)
         pct   = int(row["value"] / max_val * 100) if max_val else 0
         rank_cls = ' class="rank-1"' if i == 0 else ""
 
@@ -526,10 +536,10 @@ b {{ color: var(--cyan); }}
         h(f'<td class="rank">{i+1}</td>')
         h(f'<td><span class="nick-name">{nick}</span><br>'
           f'<div class="bar-wrap"><div class="bar-fill" style="width:{pct}%"></div></div></td>')
-        if show_lines: h(f'<td class="val">{lines:,}</td>')
-        if show_words: h(f'<td class="val">{words:,}</td>')
-        if show_wpl:   h(f'<td>{wpl}</td>')
-        if show_cpl:   h(f'<td>{cpl}</td>')
+        if show_lines: h(f'<td class="val" data-val="{lines}">{lines:,}</td>')
+        if show_words: h(f'<td class="val" data-val="{words}">{words:,}</td>')
+        if show_wpl:   h(f'<td data-val="{wpl}">{wpl}</td>')
+        if show_cpl:   h(f'<td data-val="{cpl}">{cpl}</td>')
         if show_time:
             _nb = nick_band_lines.get(nick, [0, 0, 0, 0])
             _nb_total = sum(_nb) or 1
@@ -542,7 +552,7 @@ b {{ color: var(--cyan); }}
                     _bars += (f'style="width:{_bw}px;display:inline-block;')
                     _bars += (f'height:15px;vertical-align:middle"></span>')
             h(f'<td style="white-space:nowrap">{_bars}</td>')
-        if show_lastseen: h(f'<td class="small">{last}</td>')
+        if show_lastseen: h(f'<td class="small" data-val="{_last_ts}">{last}</td>')
         if show_quote: h(f'<td class="quote-cell" title="{q}"><div>{q}</div></td>')
         h('</tr>')
 
@@ -572,7 +582,8 @@ b {{ color: var(--cyan); }}
             words = st.get("words", 0)
             wpl   = f"{words/lines:.1f}" if lines else "0"
             cpl   = f"{st.get('letters',0)/lines:.1f}" if lines else "0"
-            last  = _ago(st.get("last_seen", 0), lang)
+            _last_ts = st.get("last_seen", 0)
+            last  = _ago(_last_ts, lang)
             pct   = int(row["value"] / rest_max * 100) if rest_max else 0
 
             # Random quote (same logic as main table)
@@ -615,7 +626,7 @@ b {{ color: var(--cyan); }}
                         _bars += (f'style="width:{_bw}px;display:inline-block;')
                         _bars += (f'height:15px;vertical-align:middle"></span>')
                 h(f'<td style="white-space:nowrap">{_bars}</td>')
-            if show_lastseen: h(f'<td class="small">{last}</td>')
+            if show_lastseen: h(f'<td class="small" data-val="{_last_ts}">{last}</td>')
             if show_quote:    h(f'<td class="quote-cell" title="{q}"><div>{q}</div></td>')
             h('</tr>')
         h('</tbody></table></div></div>')
@@ -911,11 +922,11 @@ b {{ color: var(--cyan); }}
         h('<div class="tscroll"><table class="info-table">')
         for _tp in recent_topics:
             _tdt = datetime.fromtimestamp(_tp["ts"]) if _tp["ts"] else None
-            _days = (datetime.now() - _tdt).days if _tdt else 0
+            _days = (datetime.now(timezone.utc) - _tdt).days if _tdt else 0
             if _tdt and _days > 1:
                 _twhen = t("{n} days ago at {time}", lang, n=_days,
                            time=_tdt.strftime("%H:%M"))
-            elif _tdt and _tdt.date() == datetime.now().date():
+            elif _tdt and _tdt.date() == datetime.now(timezone.utc).date():
                 _twhen = t("today at {time}", lang, time=_tdt.strftime("%H:%M"))
             elif _tdt:
                 _twhen = t("yesterday at {time}", lang, time=_tdt.strftime("%H:%M"))
@@ -1175,6 +1186,58 @@ new Chart(document.getElementById('hourChart'), {{
     applyTheme(next);
   });
 })();
+
+// ── Sortable columns ──────────────────────────────────────────────────────────
+document.querySelectorAll('.sortable-table').forEach(function(table) {{
+  var tbody = table.querySelector('tbody');
+  table.querySelectorAll('th[data-col]').forEach(function(th, thIdx) {{
+    th.addEventListener('click', function() {{
+      var asc = !th.classList.contains('sort-asc');
+      // clear all headers
+      table.querySelectorAll('th').forEach(function(h) {{
+        h.classList.remove('sort-asc', 'sort-desc');
+      }});
+      th.classList.add(asc ? 'sort-asc' : 'sort-desc');
+      var rows = Array.from(tbody.querySelectorAll('tr'));
+      var isNum = th.dataset.col === 'num';
+      rows.sort(function(a, b) {{
+        var ai = Array.from(a.querySelectorAll('td'))[thIdx];
+        var bi = Array.from(b.querySelectorAll('td'))[thIdx];
+        var av = ai ? (ai.dataset.val || ai.textContent.trim()) : '';
+        var bv = bi ? (bi.dataset.val || bi.textContent.trim()) : '';
+        if (isNum) {{ av = parseFloat(av)||0; bv = parseFloat(bv)||0; }}
+        if (av < bv) return asc ? -1 : 1;
+        if (av > bv) return asc ? 1 : -1;
+        return 0;
+      }});
+      rows.forEach(function(r, i) {{
+        var rankCell = r.querySelector('.rank');
+        if (rankCell && rankCell.textContent.match(/^\\d+$/)) rankCell.textContent = i+1;
+        tbody.appendChild(r);
+      }});
+    }});
+  }});
+}});
+
+// ── Auto timezone ─────────────────────────────────────────────────────────────
+(function() {{
+  // Convert the "Statistics generated on" timestamp
+  document.querySelectorAll('[data-utc]').forEach(function(el) {{
+    var utc = el.dataset.utc;
+    if (!utc) return;
+    var d = new Date(utc);
+    var span = el.querySelector('.local-time');
+    if (!span) return;
+    var opts = {{ weekday:'long', year:'numeric', month:'long', day:'2-digit',
+                  hour:'2-digit', minute:'2-digit', second:'2-digit' }};
+    var localStr = d.toLocaleString(undefined, opts);
+    // Replace the date part inside the existing translated string
+    var tmpl = el.dataset.i18nGen || '';
+    var braceIdx = tmpl.indexOf('{');
+    var prefix = braceIdx >= 0 ? tmpl.substring(0, braceIdx) : '';
+    span.textContent = prefix + localStr;
+  }});
+}})();
 </script>
 </body>
 </html>""")
