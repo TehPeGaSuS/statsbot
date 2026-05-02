@@ -79,10 +79,10 @@ The bot always picks the right one based on the count.
 
 ```
 msgid "{nick} took voice away {count} time — someone had to."
-msgstr ""
+msgstr "{nick} retirou voice {count} vez — alguém tinha de o fazer."
 
 msgid "{nick} took voice away {count} times — someone had to."
-msgstr ""
+msgstr "{nick} retirou voice {count} vezes — alguém tinha de o fazer."
 ```
 
 **Style:**
