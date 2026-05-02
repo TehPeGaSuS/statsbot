@@ -1188,56 +1188,56 @@ new Chart(document.getElementById('hourChart'), {{
 })();
 
 // ── Sortable columns ──────────────────────────────────────────────────────────
-document.querySelectorAll('.sortable-table').forEach(function(table) {{
+document.querySelectorAll('.sortable-table').forEach(function(table) {
   var tbody = table.querySelector('tbody');
-  table.querySelectorAll('th[data-col]').forEach(function(th, thIdx) {{
-    th.addEventListener('click', function() {{
+  table.querySelectorAll('th[data-col]').forEach(function(th, thIdx) {
+    th.addEventListener('click', function() {
       var asc = !th.classList.contains('sort-asc');
       // clear all headers
-      table.querySelectorAll('th').forEach(function(h) {{
+      table.querySelectorAll('th').forEach(function(h) {
         h.classList.remove('sort-asc', 'sort-desc');
-      }});
+      });
       th.classList.add(asc ? 'sort-asc' : 'sort-desc');
       var rows = Array.from(tbody.querySelectorAll('tr'));
       var isNum = th.dataset.col === 'num';
-      rows.sort(function(a, b) {{
+      rows.sort(function(a, b) {
         var ai = Array.from(a.querySelectorAll('td'))[thIdx];
         var bi = Array.from(b.querySelectorAll('td'))[thIdx];
         var av = ai ? (ai.dataset.val || ai.textContent.trim()) : '';
         var bv = bi ? (bi.dataset.val || bi.textContent.trim()) : '';
-        if (isNum) {{ av = parseFloat(av)||0; bv = parseFloat(bv)||0; }}
+        if (isNum) { av = parseFloat(av)||0; bv = parseFloat(bv)||0; }
         if (av < bv) return asc ? -1 : 1;
         if (av > bv) return asc ? 1 : -1;
         return 0;
-      }});
-      rows.forEach(function(r, i) {{
+      });
+      rows.forEach(function(r, i) {
         var rankCell = r.querySelector('.rank');
         if (rankCell && rankCell.textContent.match(/^\\d+$/)) rankCell.textContent = i+1;
         tbody.appendChild(r);
-      }});
-    }});
-  }});
-}});
+      });
+    });
+  });
+});
 
 // ── Auto timezone ─────────────────────────────────────────────────────────────
-(function() {{
+(function() {
   // Convert the "Statistics generated on" timestamp
-  document.querySelectorAll('[data-utc]').forEach(function(el) {{
+  document.querySelectorAll('[data-utc]').forEach(function(el) {
     var utc = el.dataset.utc;
     if (!utc) return;
     var d = new Date(utc);
     var span = el.querySelector('.local-time');
     if (!span) return;
-    var opts = {{ weekday:'long', year:'numeric', month:'long', day:'2-digit',
-                  hour:'2-digit', minute:'2-digit', second:'2-digit' }};
+    var opts = { weekday:'long', year:'numeric', month:'long', day:'2-digit',
+                  hour:'2-digit', minute:'2-digit', second:'2-digit' };
     var localStr = d.toLocaleString(undefined, opts);
     // Replace the date part inside the existing translated string
     var tmpl = el.dataset.i18nGen || '';
     var braceIdx = tmpl.indexOf('{');
     var prefix = braceIdx >= 0 ? tmpl.substring(0, braceIdx) : '';
     span.textContent = prefix + localStr;
-  }});
-}})();
+  });
+})();
 </script>
 </body>
 </html>""")
