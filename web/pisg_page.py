@@ -509,8 +509,8 @@ b {{ color: var(--cyan); }}
     _daily_lines = json.dumps([r["lines"] for r in daily_data])
     if daily_data and pisg.get("DailyActivity", 30):
         section(t("Daily activity", lang))
-        h(f'<div class="chart-scroll"><div class="daily-bar-chart" id="dailyChart" '
-          f'data-dates="{_daily_dates}" data-lines="{_daily_lines}"></div></div>')
+        h(f'<div class="chart-scroll"><div class="daily-bar-chart" id="dailyChart"></div></div>')
+        h(f'<script id="dailyData" type="application/json">{{"dates":{_daily_dates},"lines":{_daily_lines}}}</script>')
 
     # ── Main nick table ───────────────────────────────────────────────────────
     section(t("Most active nicks", lang))
@@ -1187,8 +1187,11 @@ new Chart(document.getElementById('hourChart'), {{
 (function() {
   var el = document.getElementById('dailyChart');
   if (!el) return;
-  var dDatesUtc = JSON.parse(el.dataset.dates || '[]');
-  var dLines    = JSON.parse(el.dataset.lines || '[]');
+  var dataEl = document.getElementById('dailyData');
+  if (!dataEl) return;
+  var parsed  = JSON.parse(dataEl.textContent);
+  var dDatesUtc = parsed.dates || [];
+  var dLines    = parsed.lines || [];
   if (!dDatesUtc.length) return;
 
   var blueCol    = getComputedStyle(document.body).getPropertyValue('--blue').trim();
