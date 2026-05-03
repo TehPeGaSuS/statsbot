@@ -524,7 +524,7 @@ b {{ color: var(--cyan); }}
         _bar_w   = 28
         _chart_w = max(480, daily_days * (_bar_w + 2))
         section(t("Daily activity", lang))
-        h(f'<div class="chart-scroll"><div class="chart-wrap" style="width:{_chart_w}px;flex-shrink:0"><canvas id="dailyChart"></canvas></div></div>')
+        h(f'<div class="chart-scroll"><div class="chart-wrap chart-wrap-daily" style="min-width:{_chart_w}px"><canvas id="dailyChart"></canvas></div></div>')
     else:
         _daily_dates = "[]"
         _daily_lines = "[]"
@@ -1245,8 +1245,7 @@ if (document.getElementById('dailyChart')) {{
     }}
   }});
   // Scroll to show today (rightmost bar)
-  var wrap = document.getElementById('dailyChart').parentElement.parentElement;
-  wrap.scrollLeft = wrap.scrollWidth;
+  outer.scrollLeft = outer.scrollWidth;
 }}
 
 // Live user count
