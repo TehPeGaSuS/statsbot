@@ -341,21 +341,7 @@ b {{ color: var(--cyan); }}
 .chart-scroll {{ overflow-x: auto; -webkit-overflow-scrolling: touch; margin-bottom: 1rem; }}
 .chart-wrap {{ height: 140px; min-width: 480px; }}
 /* Daily bar chart */
-.daily-bar-chart {{ display: flex; align-items: flex-end;
-                    justify-content: flex-end;
-                    height: 140px; gap: 2px;
-                    border-bottom: 1px solid var(--border);
-                    overflow: hidden; }}
-.daily-bar {{ flex: 0 0 auto; position: relative; border-radius: 3px 3px 0 0;
-              min-height: 2px; cursor: default; transition: opacity .15s; }}
-.daily-bar:hover {{ opacity: .75; }}
-.daily-bar.today {{ opacity: .45; }}
-.daily-bar .bar-tip {{ display: none; position: absolute; bottom: 105%; left: 50%;
-                        transform: translateX(-50%); background: var(--bg3);
-                        border: 1px solid var(--border); border-radius: 4px;
-                        padding: 2px 6px; font-size: .72rem; color: var(--fg);
-                        white-space: nowrap; z-index: 10; pointer-events: none; }}
-.daily-bar:hover .bar-tip {{ display: block; }}
+
 
 /* Per-nick hour chart */
 .byhour-table {{ width: 100%; border-collapse: collapse; margin-bottom: 1rem; }}
@@ -507,8 +493,7 @@ b {{ color: var(--cyan); }}
     _daily_lines = json.dumps([r["lines"] for r in daily_data])
     if daily_data and pisg.get("DailyActivity", 30):
         section(t("Daily activity", lang))
-        h(f'<div class="chart-scroll"><div class="daily-bar-chart" id="dailyChart"></div></div>')
-        h(f'<script id="dailyData" type="application/json">{{"dates":{_daily_dates},"lines":{_daily_lines}}}</script>')
+        h(f'<div class="chart-scroll"><div class="chart-wrap" style="min-width:{max(480, daily_days*28)}px"><canvas id="dailyChart"></canvas></div></div>')
 
     # ── Main nick table ───────────────────────────────────────────────────────
     section(t("Most active nicks", lang))
@@ -1161,6 +1146,54 @@ new Chart(document.getElementById('hourChart'), {{
 }});
 
 
+// Daily activity chart
+if (document.getElementById('dailyChart')) {{
+  const dDatesUtc = {_daily_dates};
+  const dLines    = {_daily_lines};
+  const todayISO  = new Date().toLocaleDateString('en-CA');
+  const localLabels = dDatesUtc.map(function(d) {{
+    var dt = new Date(d + 'T12:00:00Z');
+    return dt.toLocaleDateString(undefined, {{month:'short', day:'numeric'}});
+  }});
+  const isToday = dDatesUtc.map(function(d) {{
+    return new Date(d + 'T12:00:00Z').toLocaleDateString('en-CA') === todayISO;
+  }});
+  const blueCol  = getComputedStyle(document.body).getPropertyValue('--blue').trim();
+  const gridCol  = getComputedStyle(document.body).getPropertyValue('--bg3').trim();
+  const mutedCol = getComputedStyle(document.body).getPropertyValue('--muted').trim();
+  const colors   = dLines.map(function(_, i) {{
+    return isToday[i] ? blueCol + '70' : blueCol;
+  }});
+  var dailyChart = new Chart(document.getElementById('dailyChart'), {{
+    type: 'bar',
+    data: {{
+      labels: localLabels,
+      datasets: [{{
+        data: dLines,
+        backgroundColor: colors,
+        borderRadius: 3,
+      }}]
+    }},
+    options: {{
+      responsive: true, maintainAspectRatio: false,
+      plugins: {{ legend: {{ display: false }},
+        tooltip: {{ callbacks: {{ label: function(ctx) {{
+          return ctx.parsed.y.toLocaleString() + ' lines' + (isToday[ctx.dataIndex] ? ' ★' : '');
+        }}}}}}
+      }},
+      scales: {{
+        x: {{ grid: {{ color: gridCol }},
+             ticks: {{ color: mutedCol, font: {{ size: 9 }}, maxRotation: 45, autoSkip: true, maxTicksLimit: 31 }} }},
+        y: {{ grid: {{ color: gridCol }},
+             ticks: {{ color: mutedCol }}, beginAtZero: true }}
+      }}
+    }}
+  }});
+  // Scroll to show today (rightmost bar)
+  var wrap = document.getElementById('dailyChart').parentElement.parentElement;
+  wrap.scrollLeft = wrap.scrollWidth;
+}}
+
 // Live user count
 (function() {{
   const net = {json.dumps(network)};
@@ -1181,60 +1214,6 @@ new Chart(document.getElementById('hourChart'), {{
 </script>
 """)
     h("""<script>
-// Daily activity bar chart (pure CSS/JS, timezone-aware, scrollable)
-(function() {
-  var el = document.getElementById('dailyChart');
-  if (!el) return;
-  var dataEl = document.getElementById('dailyData');
-  if (!dataEl) return;
-  var parsed  = JSON.parse(dataEl.textContent);
-  var dDatesUtc = parsed.dates || [];
-  var dLines    = parsed.lines || [];
-  if (!dDatesUtc.length) return;
-
-  var blueCol    = getComputedStyle(document.body).getPropertyValue('--blue').trim();
-  var todayLocal = new Date().toLocaleDateString('en-CA');
-  var maxLines   = Math.max.apply(null, dLines) || 1;
-  var chartH     = 140;
-
-  function buildChart() {
-    var containerW = el.offsetWidth || el.parentElement.offsetWidth || 600;
-    var barW = Math.max(20, Math.floor((containerW - (dDatesUtc.length * 2)) / dDatesUtc.length));
-
-    el.innerHTML = '';
-    dDatesUtc.forEach(function(dateUtc, i) {
-      var lines = dLines[i] || 0;
-      var barH  = Math.max(2, Math.round(lines / maxLines * chartH));
-      var dt       = new Date(dateUtc + 'T12:00:00Z');
-      var localISO = dt.toLocaleDateString('en-CA');
-      var label    = dt.toLocaleDateString(undefined, {month:'short', day:'numeric'});
-      var isToday  = localISO === todayLocal;
-
-      var bar = document.createElement('div');
-      bar.className = 'daily-bar' + (isToday ? ' today' : '');
-      bar.style.width           = barW + 'px';
-      bar.style.height          = barH + 'px';
-      bar.style.backgroundColor = blueCol;
-
-      var tip = document.createElement('div');
-      tip.className   = 'bar-tip';
-      tip.textContent = label + ': ' + lines.toLocaleString() + (isToday ? ' ★' : '');
-      bar.appendChild(tip);
-      el.appendChild(bar);
-    });
-
-    // Scroll so today (rightmost bar) is visible
-    el.parentElement.scrollLeft = el.parentElement.scrollWidth;
-  }
-
-  // Run after layout so offsetWidth is correct
-  if (document.readyState === 'complete') {
-    buildChart();
-  } else {
-    window.addEventListener('load', buildChart);
-  }
-})();
-
 (function() {
   var btn = document.getElementById('themeToggle');
   function getTheme() { return localStorage.getItem('theme'); }
