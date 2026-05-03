@@ -485,10 +485,10 @@ b {{ color: var(--cyan); }}
             h('</div>')
 
     # ── Daily activity chart ─────────────────────────────────────────────────
+    _daily_dates = json.dumps([r["date"] for r in daily_data])
+    _daily_lines = json.dumps([r["lines"] for r in daily_data])
     if daily_data and pisg.get("DailyActivity", 30):
         section(t("Daily activity", lang))
-        _daily_dates = json.dumps([r["date"] for r in daily_data])
-        _daily_lines = json.dumps([r["lines"] for r in daily_data])
         h(f'<div class="daily-chart-wrap"><canvas id="dailyChart"></canvas></div>')
 
     # ── Main nick table ───────────────────────────────────────────────────────
