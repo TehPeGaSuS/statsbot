@@ -55,7 +55,7 @@ def build_page(network: str, channel: str, period: int, config: dict) -> str:
         get_top, get_nick_list, get_top_words_channel,
         get_channel_hourly, get_recent_urls, get_recent_kicks,
         get_recent_topics, get_peak, count_users, get_conn,
-        get_daily_activity,
+        get_daily_activity, snapshot_today,
         get_top_smileys, get_top_nick_refs, get_quote_for_nick,
         get_random_quote, get_example,
         get_karma_top, get_karma_bottom
@@ -70,6 +70,8 @@ def build_page(network: str, channel: str, period: int, config: dict) -> str:
     total_users  = count_users(network, channel)
     hourly       = get_channel_hourly(network, channel)
     daily_days   = pisg.get("DailyActivity", 30)
+    if daily_days:
+        snapshot_today(network, channel)
     daily_data   = get_daily_activity(network, channel, daily_days) if daily_days else []
     hourly_data  = {h["hour"]: h["lines"] for h in hourly}
     # Fetch more words than needed so we can filter by word_length and ignore_words

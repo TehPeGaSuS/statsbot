@@ -783,6 +783,37 @@ def snapshot_daily():
                       row["lines"], row["words"]))
 
 
+def snapshot_today(network: str, channel: str):
+    """Upsert today's partial stats into daily_activity for immediate display.
+    Called on page render if today's row is missing; midnight snapshot takes
+    precedence once the scheduler fires."""
+    from datetime import date as _date
+    today = _date.today().isoformat()
+    with get_conn() as conn:
+        existing = conn.execute(
+            "SELECT 1 FROM daily_activity WHERE network=? AND channel=? AND date=?",
+            (network, channel, today)
+        ).fetchone()
+        if existing:
+            return  # already snapshotted today (by scheduler or previous render)
+        row = conn.execute("""
+            SELECT SUM(s.lines) AS lines, SUM(s.words) AS words
+            FROM stats s
+            JOIN nicks n ON n.id = s.nick_id
+            WHERE n.network=? AND n.channel=? AND s.period=1
+        """, (network, channel)).fetchone()
+        lines = row["lines"] or 0
+        words = row["words"] or 0
+        if lines:
+            conn.execute("""
+                INSERT INTO daily_activity(network, channel, date, lines, words)
+                VALUES(?,?,?,?,?)
+                ON CONFLICT(network, channel, date) DO UPDATE SET
+                    lines = excluded.lines,
+                    words = excluded.words
+            """, (network, channel, today, lines, words))
+
+
 def get_daily_activity(network: str, channel: str, days: int = 30) -> List[Dict]:
     """Return the last `days` days of activity, oldest first."""
     with get_conn() as conn:
