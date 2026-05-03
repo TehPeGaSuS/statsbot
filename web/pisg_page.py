@@ -1201,6 +1201,18 @@ if (document.getElementById('dailyChart')) {{
     return isToday[i] ? blueCol + '70' : blueCol;
   }});
 
+
+  // Size the canvas: fill available container width, expand further if many bars need it
+  const BAR_W = 20, BAR_GAP = 4;
+  const canvas = document.getElementById('dailyChart');
+  const wrap   = canvas.parentElement;
+  const outer  = wrap.parentElement;
+  const minW   = dDatesUtc.length * (BAR_W + BAR_GAP);
+  const drawW  = Math.max(outer.clientWidth, minW);
+  canvas.width  = drawW;
+  canvas.height = 160;
+  wrap.style.width = drawW + 'px';
+
   new Chart(document.getElementById('dailyChart'), {{
     type: 'bar',
     data: {{
