@@ -354,8 +354,9 @@ table.bignums td {{ display: block; }}
 b {{ color: var(--cyan); }}
 
 /* Activity charts */
-.chart-scroll {{ overflow-x: auto; -webkit-overflow-scrolling: touch; margin-bottom: 1rem; }}
+.chart-scroll {{ overflow-x: auto; overflow-y: hidden; -webkit-overflow-scrolling: touch; margin-bottom: 1rem; }}
 .chart-wrap {{ height: 140px; min-width: 480px; }}
+.chart-wrap-daily {{ height: 160px; overflow: visible; }}
 /* Daily bar chart */
 
 
@@ -524,7 +525,7 @@ b {{ color: var(--cyan); }}
         _bar_w   = 28
         _chart_w = max(480, daily_days * (_bar_w + 2))
         section(t("Daily activity", lang))
-        h(f'<div class="chart-scroll"><div class="chart-wrap chart-wrap-daily" style="min-width:{_chart_w}px"><canvas id="dailyChart"></canvas></div></div>')
+        h(f'<div class="chart-scroll"><div class="chart-wrap chart-wrap-daily" style="width:{_chart_w}px;min-width:{_chart_w}px"><canvas id="dailyChart"></canvas></div></div>')
     else:
         _daily_dates = "[]"
         _daily_lines = "[]"
