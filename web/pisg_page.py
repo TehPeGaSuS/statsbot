@@ -510,7 +510,7 @@ b {{ color: var(--cyan); }}
         _bar_w   = 20
         _chart_w = max(480, daily_days * (_bar_w + 6))
         section(t("Daily activity", lang))
-        h(f'<div class="chart-scroll"><div class="chart-wrap chart-wrap-daily" style="width:{_chart_w}px;min-width:{_chart_w}px"><canvas id="dailyChart"></canvas></div></div>')
+        h(f'<div class="chart-scroll"><div class="chart-wrap chart-wrap-daily" style="min-width:{_chart_w}px"><canvas id="dailyChart"></canvas></div></div>')
     else:
         _daily_dates = "[]"
         _daily_lines = "[]"
@@ -1187,6 +1187,13 @@ if (document.getElementById('dailyChart')) {{
     return isToday[i] ? blueCol + '70' : blueCol;
   }});
 
+  // Expand container to fill available width, but never narrower than bar count needs
+  const BAR_W = 20, BAR_GAP = 4;
+  const minW  = dDatesUtc.length * (BAR_W + BAR_GAP);
+  const wrap  = document.getElementById('dailyChart').parentElement;
+  const outer = wrap.parentElement;
+  wrap.style.width = Math.max(outer.clientWidth, minW) + 'px';
+
   new Chart(document.getElementById('dailyChart'), {{
     type: 'bar',
     data: {{
@@ -1230,7 +1237,6 @@ if (document.getElementById('dailyChart')) {{
   }});
 
   // Scroll to show today (rightmost bar)
-  var outer = document.getElementById('dailyChart').parentElement.parentElement;
   outer.scrollLeft = outer.scrollWidth;
 }}
 
