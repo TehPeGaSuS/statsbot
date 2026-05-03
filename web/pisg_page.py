@@ -337,9 +337,27 @@ table.bignums td {{ display: block; }}
 .example {{ color: var(--muted); font-size: .8rem; font-style: italic; margin-top: .2rem; }}
 b {{ color: var(--cyan); }}
 
-/* Activity chart */
-.chart-wrap {{ height: 140px; margin-bottom: 1rem; }}
-.daily-chart-wrap {{ height: 160px; margin-bottom: 1rem; }}
+/* Activity charts */
+.chart-scroll {{ overflow-x: auto; -webkit-overflow-scrolling: touch; margin-bottom: 1rem; }}
+.chart-wrap {{ height: 140px; min-width: 480px; }}
+/* Daily bar chart */
+.daily-bar-chart {{ display: flex; align-items: flex-end; height: 160px;
+                    gap: 2px; padding-bottom: 20px; position: relative;
+                    border-bottom: 1px solid var(--border); }}
+.daily-bar {{ flex: 0 0 auto; position: relative; border-radius: 3px 3px 0 0;
+              min-height: 2px; cursor: default; transition: opacity .15s; }}
+.daily-bar:hover {{ opacity: .75; }}
+.daily-bar.today {{ opacity: .45; }}
+.daily-bar .bar-tip {{ display: none; position: absolute; bottom: 105%; left: 50%;
+                        transform: translateX(-50%); background: var(--bg3);
+                        border: 1px solid var(--border); border-radius: 4px;
+                        padding: 2px 6px; font-size: .72rem; color: var(--fg);
+                        white-space: nowrap; z-index: 10; }}
+.daily-bar:hover .bar-tip {{ display: block; }}
+.daily-bar .bar-label {{ position: absolute; bottom: -18px; left: 50%;
+                          transform: translateX(-50%) rotate(-45deg);
+                          font-size: .62rem; color: var(--muted);
+                          white-space: nowrap; transform-origin: top center; }}
 
 /* Per-nick hour chart */
 .byhour-table {{ width: 100%; border-collapse: collapse; margin-bottom: 1rem; }}
@@ -477,7 +495,7 @@ b {{ color: var(--cyan); }}
     # ── Activity by hour ──────────────────────────────────────────────────────
     if pisg.get("ShowActiveTimes", True):
         section(t("Most active times", lang))
-        h(f'<div class="chart-wrap"><canvas id="hourChart"></canvas></div>')
+        h(f'<div class="chart-scroll"><div class="chart-wrap"><canvas id="hourChart"></canvas></div></div>')
         if pisg.get("ShowLegend", True):
             h('<div class="band-legend">')
             for _lc, _ll in [("bh-bar blue-h","0-5"), ("bh-bar green-h","6-11"),
@@ -491,7 +509,8 @@ b {{ color: var(--cyan); }}
     _daily_lines = json.dumps([r["lines"] for r in daily_data])
     if daily_data and pisg.get("DailyActivity", 30):
         section(t("Daily activity", lang))
-        h(f'<div class="daily-chart-wrap"><canvas id="dailyChart"></canvas></div>')
+        h(f'<div class="chart-scroll"><div class="daily-bar-chart" id="dailyChart" '
+          f'data-dates="{_daily_dates}" data-lines="{_daily_lines}"></div></div>')
 
     # ── Main nick table ───────────────────────────────────────────────────────
     section(t("Most active nicks", lang))
@@ -1143,41 +1162,6 @@ new Chart(document.getElementById('hourChart'), {{
   }}
 }});
 
-// Daily activity chart
-if (document.getElementById('dailyChart')) {{
-  const dDatesUtc = {_daily_dates};
-  const dLines    = {_daily_lines};
-  // Shift UTC dates to local — find the local date string for each UTC midnight
-  const localDates = dDatesUtc.map(function(d) {{
-    // d is "YYYY-MM-DD" stored as UTC; display as local date
-    var dt = new Date(d + 'T12:00:00Z'); // use noon to avoid DST edge cases
-    return dt.toLocaleDateString(undefined, {{month:'short', day:'numeric'}});
-  }});
-  const gridCol  = getComputedStyle(document.body).getPropertyValue('--bg3').trim();
-  const mutedCol = getComputedStyle(document.body).getPropertyValue('--muted').trim();
-  const blueCol  = getComputedStyle(document.body).getPropertyValue('--blue').trim();
-  new Chart(document.getElementById('dailyChart'), {{
-    type: 'bar',
-    data: {{
-      labels: localDates,
-      datasets: [{{
-        data: dLines,
-        backgroundColor: blueCol,
-        borderRadius: 2,
-      }}]
-    }},
-    options: {{
-      responsive: true, maintainAspectRatio: false,
-      plugins: {{ legend: {{ display: false }} }},
-      scales: {{
-        x: {{ grid: {{ color: gridCol }},
-             ticks: {{ color: mutedCol, font: {{ size: 9 }}, maxRotation: 45 }} }},
-        y: {{ grid: {{ color: gridCol }},
-             ticks: {{ color: mutedCol }}, beginAtZero: true }}
-      }}
-    }}
-  }});
-}}
 
 // Live user count
 (function() {{
@@ -1199,6 +1183,54 @@ if (document.getElementById('dailyChart')) {{
 </script>
 """)
     h("""<script>
+// Daily activity bar chart (pure CSS/JS, timezone-aware, scrollable)
+(function() {
+  var el = document.getElementById('dailyChart');
+  if (!el) return;
+  var dDatesUtc = JSON.parse(el.dataset.dates || '[]');
+  var dLines    = JSON.parse(el.dataset.lines || '[]');
+  if (!dDatesUtc.length) return;
+
+  var blueCol    = getComputedStyle(document.body).getPropertyValue('--blue').trim();
+  var todayLocal = new Date().toLocaleDateString('en-CA');
+  var maxLines   = Math.max.apply(null, dLines) || 1;
+  var chartH     = 140;
+
+  var containerW = el.parentElement.offsetWidth || window.innerWidth;
+  var barW = Math.max(20, Math.floor((containerW - (dDatesUtc.length * 2)) / dDatesUtc.length));
+
+  dDatesUtc.forEach(function(dateUtc, i) {
+    var lines = dLines[i] || 0;
+    var barH  = Math.max(2, Math.round(lines / maxLines * chartH));
+    var dt       = new Date(dateUtc + 'T12:00:00Z');
+    var localISO = dt.toLocaleDateString('en-CA');
+    var label    = dt.toLocaleDateString(undefined, {month:'short', day:'numeric'});
+    var isToday  = localISO === todayLocal;
+
+    var bar = document.createElement('div');
+    bar.className = 'daily-bar' + (isToday ? ' today' : '');
+    bar.style.width           = barW + 'px';
+    bar.style.height          = barH + 'px';
+    bar.style.backgroundColor = blueCol;
+
+    var tip = document.createElement('div');
+    tip.className   = 'bar-tip';
+    tip.textContent = label + ': ' + lines.toLocaleString() + (isToday ? ' ★' : '');
+    bar.appendChild(tip);
+
+    if (barW >= 24) {
+      var lbl = document.createElement('div');
+      lbl.className   = 'bar-label';
+      lbl.textContent = label;
+      bar.appendChild(lbl);
+    }
+
+    el.appendChild(bar);
+  });
+
+  el.parentElement.scrollLeft = el.parentElement.scrollWidth;
+})();
+
 (function() {
   var btn = document.getElementById('themeToggle');
   function getTheme() { return localStorage.getItem('theme'); }
