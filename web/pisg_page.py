@@ -341,9 +341,11 @@ b {{ color: var(--cyan); }}
 .chart-scroll {{ overflow-x: auto; -webkit-overflow-scrolling: touch; margin-bottom: 1rem; }}
 .chart-wrap {{ height: 140px; min-width: 480px; }}
 /* Daily bar chart */
-.daily-bar-chart {{ display: flex; align-items: flex-end; height: 160px;
-                    gap: 2px; padding-bottom: 20px; position: relative;
-                    border-bottom: 1px solid var(--border); }}
+.daily-bar-chart {{ display: flex; align-items: flex-end;
+                    justify-content: flex-end;
+                    height: 140px; gap: 2px;
+                    border-bottom: 1px solid var(--border);
+                    overflow: hidden; }}
 .daily-bar {{ flex: 0 0 auto; position: relative; border-radius: 3px 3px 0 0;
               min-height: 2px; cursor: default; transition: opacity .15s; }}
 .daily-bar:hover {{ opacity: .75; }}
@@ -352,12 +354,8 @@ b {{ color: var(--cyan); }}
                         transform: translateX(-50%); background: var(--bg3);
                         border: 1px solid var(--border); border-radius: 4px;
                         padding: 2px 6px; font-size: .72rem; color: var(--fg);
-                        white-space: nowrap; z-index: 10; }}
+                        white-space: nowrap; z-index: 10; pointer-events: none; }}
 .daily-bar:hover .bar-tip {{ display: block; }}
-.daily-bar .bar-label {{ position: absolute; bottom: -18px; left: 50%;
-                          transform: translateX(-50%) rotate(-45deg);
-                          font-size: .62rem; color: var(--muted);
-                          white-space: nowrap; transform-origin: top center; }}
 
 /* Per-nick hour chart */
 .byhour-table {{ width: 100%; border-collapse: collapse; margin-bottom: 1rem; }}
@@ -1199,39 +1197,42 @@ new Chart(document.getElementById('hourChart'), {{
   var maxLines   = Math.max.apply(null, dLines) || 1;
   var chartH     = 140;
 
-  var containerW = el.parentElement.offsetWidth || window.innerWidth;
-  var barW = Math.max(20, Math.floor((containerW - (dDatesUtc.length * 2)) / dDatesUtc.length));
+  function buildChart() {
+    var containerW = el.offsetWidth || el.parentElement.offsetWidth || 600;
+    var barW = Math.max(20, Math.floor((containerW - (dDatesUtc.length * 2)) / dDatesUtc.length));
 
-  dDatesUtc.forEach(function(dateUtc, i) {
-    var lines = dLines[i] || 0;
-    var barH  = Math.max(2, Math.round(lines / maxLines * chartH));
-    var dt       = new Date(dateUtc + 'T12:00:00Z');
-    var localISO = dt.toLocaleDateString('en-CA');
-    var label    = dt.toLocaleDateString(undefined, {month:'short', day:'numeric'});
-    var isToday  = localISO === todayLocal;
+    el.innerHTML = '';
+    dDatesUtc.forEach(function(dateUtc, i) {
+      var lines = dLines[i] || 0;
+      var barH  = Math.max(2, Math.round(lines / maxLines * chartH));
+      var dt       = new Date(dateUtc + 'T12:00:00Z');
+      var localISO = dt.toLocaleDateString('en-CA');
+      var label    = dt.toLocaleDateString(undefined, {month:'short', day:'numeric'});
+      var isToday  = localISO === todayLocal;
 
-    var bar = document.createElement('div');
-    bar.className = 'daily-bar' + (isToday ? ' today' : '');
-    bar.style.width           = barW + 'px';
-    bar.style.height          = barH + 'px';
-    bar.style.backgroundColor = blueCol;
+      var bar = document.createElement('div');
+      bar.className = 'daily-bar' + (isToday ? ' today' : '');
+      bar.style.width           = barW + 'px';
+      bar.style.height          = barH + 'px';
+      bar.style.backgroundColor = blueCol;
 
-    var tip = document.createElement('div');
-    tip.className   = 'bar-tip';
-    tip.textContent = label + ': ' + lines.toLocaleString() + (isToday ? ' ★' : '');
-    bar.appendChild(tip);
+      var tip = document.createElement('div');
+      tip.className   = 'bar-tip';
+      tip.textContent = label + ': ' + lines.toLocaleString() + (isToday ? ' ★' : '');
+      bar.appendChild(tip);
+      el.appendChild(bar);
+    });
 
-    if (barW >= 24) {
-      var lbl = document.createElement('div');
-      lbl.className   = 'bar-label';
-      lbl.textContent = label;
-      bar.appendChild(lbl);
-    }
+    // Scroll so today (rightmost bar) is visible
+    el.parentElement.scrollLeft = el.parentElement.scrollWidth;
+  }
 
-    el.appendChild(bar);
-  });
-
-  el.parentElement.scrollLeft = el.parentElement.scrollWidth;
+  // Run after layout so offsetWidth is correct
+  if (document.readyState === 'complete') {
+    buildChart();
+  } else {
+    window.addEventListener('load', buildChart);
+  }
 })();
 
 (function() {
