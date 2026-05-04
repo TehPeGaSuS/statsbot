@@ -49,7 +49,8 @@ def strip_irc(text: str) -> str:
     return text
 
 
-def build_page(network: str, channel: str, period: int, config: dict) -> str:
+def build_page(network: str, channel: str, period: int, config: dict,
+               lang_override: str = None) -> str:
     """Build the full pisg-style HTML page and return it as a string."""
     from database.models import (
         get_top, get_nick_list, get_top_words_channel,
@@ -63,7 +64,8 @@ def build_page(network: str, channel: str, period: int, config: dict) -> str:
 
     pisg = dict(config.get("pisg", {}))
     web  = config.get("web", {})
-    lang = get_lang(network, channel)
+    from i18n import SUPPORTED
+    lang = lang_override if lang_override and lang_override in SUPPORTED else get_lang(network, channel)
 
     # Apply per-channel pisg overrides from DB (set via PM: pisg #chan key value)
     from database.models import get_pisg_channel_overrides
@@ -475,10 +477,19 @@ b {{ color: var(--cyan); }}
 """)
 
     # ── Period tabs ───────────────────────────────────────────────────────────
-    h('<div class="tabs">')
+    h('<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:.5rem;margin-bottom:1.5rem">')
+    h('<div class="tabs" style="margin-bottom:0">')
     for i, pn in enumerate(period_names):
         active = ' active' if i == period else ''
         h(f'<a class="tab{active}" href="?period={i}">{pn}</a>')
+    h('</div>')
+    # Language switcher
+    _lang_labels = {lc: lc.split("_")[1] for lc in SUPPORTED}
+    h('<div class="tabs" style="margin-bottom:0">')
+    for _lcode, _llabel in _lang_labels.items():
+        _lactive = ' active' if _lcode == lang else ''
+        h(f'<a class="tab{_lactive}" href="?period={period}&lang={_lcode}">{_llabel}</a>')
+    h('</div>')
     h('</div>')
 
     # ── Summary strip ─────────────────────────────────────────────────────────

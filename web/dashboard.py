@@ -241,7 +241,8 @@ def channel_stats(network: str, channel: str):
         )
 
     from web.pisg_page import build_page
-    html = build_page(network, channel, period, _config)
+    lang_override = request.args.get("lang")
+    html = build_page(network, channel, period, _config, lang_override=lang_override)
     return html
 
 
